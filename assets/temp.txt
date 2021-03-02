@@ -1,0 +1,1 @@
+Git won't commit empty directories, so this is a placeholder file until we have an asset to actually put here.
