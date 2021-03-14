@@ -1,0 +1,14 @@
+// enum_EventID
+// MS: 3/14/21 - initial code
+
+#ifndef ENUM_EVENT_ID
+#define ENUM_EVENT_ID
+
+enum
+{
+    ID_CloseFrame = 1,
+    ID_OpenTempHome = 2,
+    ID_OpenMVHead = 3
+};
+
+#endif

@@ -1,0 +1,15 @@
+// enum_FrameType
+// MS: 3/14/21 - initial code
+
+#ifndef ENUM_FRAME_TYPE
+#define ENUM_FRAME_TYPE
+
+// Make sure none of the frame types have exactly the same name as their corresponding class!
+// (It causes problems with trying to instantiate the class.)
+enum FrameType
+{
+    TempHome = 1,
+    MVHead = 2
+};
+
+#endif
