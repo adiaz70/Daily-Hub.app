@@ -13,8 +13,11 @@ public:
     HubFrame(const wxString& title, const int _id, const wxPoint& pos, const wxSize& size)
             : wxFrame(NULL, id, title, pos, size) { id = _id; }
 
-    void CloseFrame() { Close(true); }
-    void Forget() { forgotten = true; }
+    void CloseFrame()
+    {
+        forgotten = true; 
+        Close(true);
+    }
     int GetID() { return id; }
 
     // This pure virtual function means that HubFrame is abstract and *cannot* be instantiated. There has to be

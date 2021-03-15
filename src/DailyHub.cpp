@@ -69,7 +69,6 @@ void DailyHub::CloseAll()
 {
     while (frames.size() > 0)
     {
-        frames.back()->Forget();
         frames.back()->CloseFrame();
         frames.pop_back();
     }
