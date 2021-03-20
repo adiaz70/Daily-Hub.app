@@ -1,5 +1,6 @@
 // enum_EventID
 // MS: 3/14/21 - initial code
+// MS: 3/20/21 - added ID_OpenMVCreate
 
 #ifndef ENUM_EVENT_ID
 #define ENUM_EVENT_ID
@@ -8,7 +9,8 @@ enum
 {
     ID_CloseFrame = 1,
     ID_OpenTempHome = 2,
-    ID_OpenMVHead = 3
+    ID_OpenMVHead = 3,
+    ID_OpenMVCreate = 4
 };
 
 #endif

@@ -1,6 +1,7 @@
 // MV_Head.h -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
-// 3/14/21
+// Created on 3/14/21
+// Last edited on 3/20/21
 
 #ifndef MV_HEAD_H
 #define MV_HEAD_H
@@ -19,7 +20,7 @@ public:
 
 private:
     void OnOpenHome(wxCommandEvent& event);
-    void OnOpenMVHead(wxCommandEvent& event);
+    void OnCreate(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);

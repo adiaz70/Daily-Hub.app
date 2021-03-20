@@ -12,7 +12,7 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, const wxSize& siz
     hub = _hub;
 
     wxMenu *menuFile = new wxMenu;
-    menuFile->Append(ID_OpenMVHead, "&Open new window");
+    menuFile->Append(ID_OpenMVHead, "&Open Meeting View");
     menuFile->Append(ID_CloseFrame, "&Close window");
     menuFile->Append(wxID_EXIT, "&Quit");
 
@@ -28,7 +28,7 @@ FrameType TempHomeFrame::GetFrameType()
 
 void TempHomeFrame::OnOpenMVHead(wxCommandEvent& event)
 {
-    hub->OpenFrame(FrameType::MVHead);
+    hub->OpenUniqueFrame(FrameType::MVHead);
 }
 
 // This is called when the menu option to close the window is selected

@@ -1,22 +1,30 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
-// 3/14/21
+// Created on 3/14/21
+// Last edited on 3/20/21
 
 #include "MV_Head.h"
+
+//***************************
+// Public member functions. *
+//***************************
 
 MV_Head::MV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub)
         : HubFrame("Daily Hub - Meeting #" + wxString() << id, id, pos, size)
 {
     hub = _hub;
 
-    wxMenu *menuFile = new wxMenu;
-    menuFile->Append(ID_OpenTempHome, "&Open Home");
-    menuFile->Append(ID_OpenMVHead, "&Open new window");
-    menuFile->Append(ID_CloseFrame, "&Close window");
-    menuFile->Append(wxID_EXIT, "&Quit");
+    wxMenu *fileMenu = new wxMenu;
+    fileMenu->Append(ID_OpenTempHome, "&Open Home");
+    fileMenu->Append(ID_CloseFrame, "&Close window");
+    fileMenu->Append(wxID_EXIT, "&Quit");
+
+    wxMenu *meetingMenu = new wxMenu;
+    meetingMenu->Append(ID_OpenMVCreate, "&Create new meeting");
 
     wxMenuBar *menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, "&File");
+    menuBar->Append(fileMenu, "&File");
+    menuBar->Append(meetingMenu, "&Meetings");
     SetMenuBar(menuBar);
 }
 
@@ -25,14 +33,18 @@ FrameType MV_Head::GetFrameType()
     return FrameType::MVHead;
 }
 
+//****************************
+// Private member functions. *
+//****************************
+
 void MV_Head::OnOpenHome(wxCommandEvent& event)
 {
     hub->OpenUniqueFrame(FrameType::TempHome);
 }
 
-void MV_Head::OnOpenMVHead(wxCommandEvent& event)
+void MV_Head::OnCreate(wxCommandEvent& event)
 {
-    hub->OpenFrame(FrameType::MVHead);
+    hub->OpenUniqueFrame(FrameType::MVCreate);
 }
 
 // This is called when the menu option to close the window is selected
@@ -58,7 +70,7 @@ void MV_Head::OnQuit(wxCommandEvent& event)
 
 wxBEGIN_EVENT_TABLE(MV_Head, wxFrame)
     EVT_MENU(ID_OpenTempHome, MV_Head::OnOpenHome)
-    EVT_MENU(ID_OpenMVHead, MV_Head::OnOpenMVHead)
+    EVT_MENU(ID_OpenMVCreate, MV_Head::OnCreate)
     EVT_MENU(ID_CloseFrame, MV_Head::OnExit)
     EVT_MENU(wxID_EXIT, MV_Head::OnQuit)
     EVT_CLOSE(MV_Head::OnClosed)
