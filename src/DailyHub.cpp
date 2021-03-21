@@ -49,7 +49,7 @@ void DailyHub::OpenFrame(FrameType id)
     {
         case FrameType::TempHome: frames.push_back(new TempHomeFrame(NewFrameID(), wxPoint(50, 50), wxSize(550, 440), this)); break;
         case FrameType::MVHead: frames.push_back(new MV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
-        case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
+        case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(450, 200), this)); break;
         default: return;
     }
 
@@ -68,8 +68,21 @@ void DailyHub::ForgetFrame(HubFrame* _frame)
     }
 }
 
+// MS: 3/21/21 - added code to check for open windows with unsaved data to give user a chance to stop
+// https://docs.wxwidgets.org/3.0/classwx_message_dialog.html
 void DailyHub::CloseAll()
 {
+    if (FindFrame(FrameType::MVCreate) != -1)
+    {
+        wxMessageDialog *quitDialog = new wxMessageDialog(NULL,
+                "There are one or more windows open with unsaved data.\nAre you sure you want to quit?", "",
+                wxICON_EXCLAMATION | wxOK | wxCANCEL, wxDefaultPosition);
+
+        // If the user chooses the cancel button, return from the method before any windows are closed
+        if (quitDialog->ShowModal() == wxID_CANCEL)
+            return;
+    }
+
     while (frames.size() > 0)
     {
         frames.back()->CloseFrame();

@@ -10,8 +10,11 @@
 class HubFrame: public wxFrame
 {
 public:
-    HubFrame(const wxString& title, const int _id, const wxPoint& pos, const wxSize& size)
-            : wxFrame(NULL, id, title, pos, size) { id = _id; }
+    // MS: 3/21/21 - added boolean parameter to turn off frame resizing, defaults to true
+    HubFrame(const wxString& title, const int _id, const wxPoint& pos, const wxSize& size, bool resize = true)
+            : wxFrame(NULL, id, title, pos, size, resize ? wxDEFAULT_FRAME_STYLE : wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
+            { id = _id; }
+
 
     void CloseFrame()
     {

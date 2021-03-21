@@ -1,7 +1,13 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 3/20/21
+// Last edited on 3/21/21
+
+// Resources:
+// https://docs.wxwidgets.org/3.0/overview_sizer.html
+// https://docs.wxwidgets.org/3.0/classwx_flex_grid_sizer.html
+// https://docs.wxwidgets.org/3.0/classwx_sizer_flags.html
+// https://docs.wxwidgets.org/3.0/classwx_text_ctrl.html
 
 #include "MV_Create.h"
 
@@ -10,30 +16,32 @@
 //***************************
 
 MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub)
-        : HubFrame("Daily Hub - New Meeting", id, pos, size)
+        : HubFrame("Daily Hub - New Meeting", id, pos, size, false)
 {
     hub = _hub;
 
-    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(375, 350), wxTE_MULTILINE), 1, wxEXPAND | wxALL, 10);
-
-    wxBoxSizer *button_sizer = new wxBoxSizer( wxHORIZONTAL );
-    button_sizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"), 0, wxALL, 10);//wxSizerFlags(0).Align().Border(wxALL, 10));
-    button_sizer->Add(new wxButton(this, wxID_OK, "Create"), 0, wxALL, 10);//wxSizerFlags(0).Align().Border(wxALL, 10));
-
-    sizer->Add(button_sizer, wxSizerFlags(0).Center() );
+    wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
     
-    SetSizerAndFit(sizer);
+    wxFlexGridSizer *dataSizer = new wxFlexGridSizer(2, 2, 0, 5);
+    // Add(wxSizer *sizer, const wxSizerFlags &flags)
+    dataSizer->Add(new wxStaticText(this, GetID(), "Meeting Name:", wxDefaultPosition, wxDefaultSize, 0, ""), wxSizerFlags(0).Center().Right().Border());
 
-    // Source: https://docs.wxwidgets.org/3.0/overview_sizer.html
-    /*topsizer->Add(new wxTextCtrl( this, -1, "My text.", wxDefaultPosition, wxSize(100,60), wxTE_MULTILINE),
-        1,            // make vertically stretchable
-        wxEXPAND |    // make horizontally stretchable
-        wxALL,        //   and make border all around
-        10 );         // set border width to 10*/
+    wxTextCtrl *meetingTxt = new wxTextCtrl(this, GetID(), "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
+    meetingTxt->SetMaxLength(35);
+    // Add(wxSizer *sizer, int proportion=0, int flag=0, int border=0, wxObject *userData=NULL)
+    dataSizer->Add(meetingTxt, 1, wxEXPAND | wxALL, 10);
 
-    // Other resource(s):
-    // https://wiki.wxwidgets.org/Writing_Your_First_Application-Using_The_WxTextCtrl
+    dataSizer->Add(new wxStaticText(this, GetID(), "Meeting Link:", wxDefaultPosition, wxDefaultSize, 0, ""), wxSizerFlags(0).Center().Right().Border());
+    dataSizer->Add(new wxTextCtrl(this, GetID(), "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP), 1, wxEXPAND | wxALL, 10);
+
+    wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+    buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"), wxSizerFlags(0).Border(wxALL, 10));
+    buttonSizer->Add(new wxButton(this, wxID_OK, "Create"), wxSizerFlags(0).Border(wxALL, 10));
+
+    topSizer->Add(dataSizer, wxSizerFlags(0).Center());
+    topSizer->Add(buttonSizer, wxSizerFlags(0).Center());
+    
+    SetSizer(topSizer);
 }
 
 FrameType MV_Create::GetFrameType()
