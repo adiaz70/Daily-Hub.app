@@ -49,7 +49,7 @@ void DailyHub::OpenFrame(FrameType id)
     {
         case FrameType::TempHome: frames.push_back(new TempHomeFrame(NewFrameID(), wxPoint(50, 50), wxSize(550, 440), this)); break;
         case FrameType::MVHead: frames.push_back(new MV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
-        case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(450, 200), this)); break;
+        case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(450, 250), this)); break;
         default: return;
     }
 
@@ -75,7 +75,7 @@ void DailyHub::CloseAll()
     if (FindFrame(FrameType::MVCreate) != -1)
     {
         wxMessageDialog *quitDialog = new wxMessageDialog(NULL,
-                "There are one or more windows open with unsaved data.\nAre you sure you want to quit?", "",
+                "One or more windows might have unsaved data.\nAre you sure you want to quit?", "",
                 wxICON_EXCLAMATION | wxOK | wxCANCEL, wxDefaultPosition);
 
         // If the user chooses the cancel button, return from the method before any windows are closed
@@ -88,6 +88,12 @@ void DailyHub::CloseAll()
         frames.back()->CloseFrame();
         frames.pop_back();
     }
+}
+
+// MS: 3/22/21 - added method
+int DailyHub::FrameCount()
+{
+    return frames.size();
 }
 
 //****************************

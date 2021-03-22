@@ -20,6 +20,9 @@ public:
     void ForgetFrame(HubFrame* _frame);
     void CloseAll();
 
+    // MS: 3/22/21 - added method
+    int FrameCount();
+
 private:
     int NewFrameID(); // Returns unique integer ID for every frame created
     int FindFrame(FrameType id); // Returns the index of the first frame of a certain type in the frames vector, or -1 if none exist
