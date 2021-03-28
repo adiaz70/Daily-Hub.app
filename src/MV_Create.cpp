@@ -10,6 +10,7 @@
 // https://docs.wxwidgets.org/3.0/classwx_text_ctrl.html
 
 #include "MV_Create.h"
+#include "Meeting.h"
 
 //***************************
 // Public member functions. *
@@ -77,7 +78,13 @@ void MV_Create::OnCreate(wxCommandEvent& event)
             return;
     }
 
-    // do stuff...
+    // Create a new Meeting object with the information in the text fields
+    Meeting *meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString());
+    //****************************************************************************************************************
+    // To-do: Add meeting to database (this might not need an object made here, but it's proof of concept, at least) *
+    //****************************************************************************************************************
+    //std::cout << "Name: " << meeting->GetName() << "\nLink: " << meeting->GetLink() << "\n";
+    delete(meeting);
 
     Close(true);
 }
