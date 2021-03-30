@@ -9,7 +9,8 @@
 enum FrameType
 {
     TempHome = 1,
-    MVHead = 2
+    MVHead = 2,
+    CVHead = 3
 };
 
 #endif
