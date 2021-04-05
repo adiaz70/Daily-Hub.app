@@ -1,7 +1,7 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 3/22/21
+// Last edited on 4/5/21
 
 // Resources:
 // https://docs.wxwidgets.org/3.0/overview_sizer.html
@@ -24,7 +24,7 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     wxSizerFlags labelFlags(0);
     labelFlags.Center().Right().Border();
     
-    wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+    topSizer = new wxBoxSizer(wxVERTICAL);
     wxFlexGridSizer *dataSizer = new wxFlexGridSizer(3, 2, 0, 5);
 
     // Add prompt for the meeting name and a text field w/ limited characters to answer it
@@ -46,11 +46,29 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     linkTxt = new wxTextCtrl(this, GetID(), "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
     dataSizer->Add(linkTxt, 1, wxEXPAND | wxALL, 10);
 
+    // Add all of these data entry fields to the top sizer
+    topSizer->Add(dataSizer, wxSizerFlags(0).Center());
+
+    // Create the checkbox to indicate a recurring meeting and add it to the top sizer
+    wxCheckBox *recurringCheckBox = new wxCheckBox(this, ID_ToggleCheckBox, "This is a recurring meeting");
+    topSizer->Add(recurringCheckBox, wxSizerFlags(0).Center());
+
+    wxBoxSizer *recurringDaysSizer = new wxBoxSizer(wxHORIZONTAL);
+    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Mon"), wxSizerFlags(0));
+    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Tue"), wxSizerFlags(0));
+    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Wed"), wxSizerFlags(0));
+    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Thur"), wxSizerFlags(0));
+    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Fri"), wxSizerFlags(0));
+    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Sat"), wxSizerFlags(0));
+    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Sun"), wxSizerFlags(0));
+    topSizer->Add(recurringDaysSizer, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT | wxUP, 10));
+    topSizer->Hide(recurringDaysSizer);
+    topSizer->Layout();
+
+    // Add the buttons at the bottom of the window and add them to the top sizer
     wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"), wxSizerFlags(0).Border(wxALL, 10));
     buttonSizer->Add(new wxButton(this, wxID_OK, "Create"), wxSizerFlags(0).Border(wxALL, 10));
-
-    topSizer->Add(dataSizer, wxSizerFlags(0).Center());
     topSizer->Add(buttonSizer, wxSizerFlags(0).Center());
     
     SetSizer(topSizer);
@@ -87,6 +105,22 @@ void MV_Create::OnCreate(wxCommandEvent& event)
     delete(meeting);
 
     Close(true);
+}
+
+void MV_Create::OnRecurring(wxCommandEvent& event)
+{
+    if (event.IsChecked())
+    {
+        topSizer->Show((size_t) 2);
+        SetSize(wxDefaultCoord, wxDefaultCoord, 450, 280);
+    }
+    else
+    {
+        topSizer->Hide((size_t) 2);
+        SetSize(wxDefaultCoord, wxDefaultCoord, 450, 250);
+    }
+
+    topSizer->Layout();
 }
 
 void MV_Create::OnCancel(wxCommandEvent& event)
@@ -128,5 +162,6 @@ void MV_Create::OnClosed(wxCloseEvent& event)
 wxBEGIN_EVENT_TABLE(MV_Create, wxFrame)
     EVT_BUTTON(wxID_CANCEL, MV_Create::OnCancel)
     EVT_BUTTON(wxID_OK, MV_Create::OnCreate)
+    EVT_CHECKBOX(ID_ToggleCheckBox, MV_Create::OnRecurring)
     EVT_CLOSE(MV_Create::OnClosed)
 wxEND_EVENT_TABLE()
