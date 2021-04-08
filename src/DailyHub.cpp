@@ -49,7 +49,7 @@ void DailyHub::OpenFrame(FrameType id)
     {
         case FrameType::TempHome: frames.push_back(new TempHomeFrame(NewFrameID(), wxPoint(50, 50), wxSize(550, 440), this)); break;
         case FrameType::MVHead: frames.push_back(new MV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
-        case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(450, 270), this)); break;
+        case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(460, 350), this)); break;
         default: return;
     }
 

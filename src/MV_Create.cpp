@@ -1,7 +1,7 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/7/21
+// Last edited on 4/8/21
 
 // Resources:
 // https://docs.wxwidgets.org/3.0/overview_sizer.html
@@ -25,7 +25,7 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     labelFlags.Center().Right().Border();
     
     topSizer = new wxBoxSizer(wxVERTICAL);
-    wxFlexGridSizer *dataSizer = new wxFlexGridSizer(3, 2, 0, 5);
+    wxFlexGridSizer *dataSizer = new wxFlexGridSizer(5, 2, 0, 5);
 
     // Add prompt for the meeting name and a text field w/ limited characters to answer it
     // Add(wxSizer *sizer, const wxSizerFlags &flags)
@@ -42,7 +42,7 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
 
     // Add two labels and a button for choosing the contact for this meeting
     wxBoxSizer *contactSizer = new wxBoxSizer(wxHORIZONTAL);
-    dataSizer->Add(new wxStaticText(this, 0, "Contact Name:", wxDefaultPosition, wxDefaultSize), labelFlags);
+    dataSizer->Add(new wxStaticText(this, 0, "Contact (Optional):", wxDefaultPosition, wxDefaultSize), labelFlags);
     contactName = new wxStaticText(this, 0, "none", wxDefaultPosition, wxDefaultSize);
     wxFont font = contactName->GetFont();
     font.MakeItalic();
@@ -54,6 +54,31 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     contactButton->SetFont(font);
     contactSizer->Add(contactButton, wxSizerFlags(0).Center().Border(wxLEFT, 15));
     dataSizer->Add(contactSizer, wxSizerFlags(0));
+
+    // Add everything need to enter the start and end time for this meeting
+    wxTextValidator validator(wxFILTER_DIGITS);
+
+    dataSizer->Add(new wxStaticText(this, 0, "Start Time:", wxDefaultPosition, wxDefaultSize), labelFlags);
+    wxBoxSizer *startTimeSizer = new wxBoxSizer(wxHORIZONTAL);
+    meetingTime[0] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+    meetingTime[0]->SetMaxLength(2);
+    startTimeSizer->Add(meetingTime[0], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
+    startTimeSizer->Add(new wxStaticText(this, 0, ":", wxDefaultPosition, wxDefaultSize), wxSizerFlags(0).Center().Border(wxLEFT, 1));
+    meetingTime[1] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+    meetingTime[1]->SetMaxLength(2);
+    startTimeSizer->Add(meetingTime[1], wxSizerFlags(0).Center().Border(wxUP | wxRIGHT | wxDOWN, 10));
+    dataSizer->Add(startTimeSizer, wxSizerFlags(0));
+
+    dataSizer->Add(new wxStaticText(this, 0, "End Time:", wxDefaultPosition, wxDefaultSize), labelFlags);
+    wxBoxSizer *endTimeSizer = new wxBoxSizer(wxHORIZONTAL);
+    meetingTime[2] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+    meetingTime[2]->SetMaxLength(2);
+    endTimeSizer->Add(meetingTime[2], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
+    endTimeSizer->Add(new wxStaticText(this, 0, ":", wxDefaultPosition, wxDefaultSize), wxSizerFlags(0).Center().Border(wxLEFT, 1));
+    meetingTime[3] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+    meetingTime[3]->SetMaxLength(2);
+    endTimeSizer->Add(meetingTime[3], wxSizerFlags(0).Center().Border(wxUP | wxRIGHT | wxDOWN, 10));
+    dataSizer->Add(endTimeSizer, wxSizerFlags(0));
 
     // Add all of these data entry fields to the top sizer
     topSizer->Add(dataSizer, wxSizerFlags(0).Center());
@@ -86,7 +111,7 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     recurringDaysSizer->Add(sun, wxSizerFlags(0).Border(wxRIGHT, 5));
     recurringDays[6] = sun;
 
-    topSizer->Add(recurringDaysSizer, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT | wxUP, 10));
+    topSizer->Add(recurringDaysSizer, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT | wxUP, 15));
     topSizer->Hide(recurringDaysSizer);
     topSizer->Layout();
 
@@ -94,7 +119,7 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"), wxSizerFlags(0).Border(wxALL, 10));
     buttonSizer->Add(new wxButton(this, wxID_OK, "Create"), wxSizerFlags(0).Border(wxALL, 10));
-    topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 5));
+    topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 10));
     
     SetSizer(topSizer);
 }
@@ -120,6 +145,10 @@ void MV_Create::OnCreate(wxCommandEvent& event)
         if (warningDialog->ShowModal())
             return;
     }
+
+    //*****************************************************************
+    // To-do: Validate that the entered times are logically possible. *
+    //*****************************************************************
 
     Meeting *meeting;
 
@@ -210,13 +239,13 @@ void MV_Create::OnRecurring(wxCommandEvent& event)
     {
         recurring = true;
         topSizer->Show((size_t) 2);
-        SetSize(wxDefaultCoord, wxDefaultCoord, 450, 300);
+        SetSize(wxDefaultCoord, wxDefaultCoord, 460, 380);
     }
     else
     {
         recurring = false;
         topSizer->Hide((size_t) 2);
-        SetSize(wxDefaultCoord, wxDefaultCoord, 450, 270);
+        SetSize(wxDefaultCoord, wxDefaultCoord, 460, 350);
     }
 
     // Fix the layout of the sizers to adapt to the shown/hidden list of checkboxes (must be called after every adjustment)

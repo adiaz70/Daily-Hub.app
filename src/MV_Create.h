@@ -1,7 +1,7 @@
 // MV_Create.h -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/7/21
+// Last edited on 4/8/21
 
 #ifndef MV_CREATE_H
 #define MV_CREATE_H
@@ -28,6 +28,7 @@ private:
     wxBoxSizer *topSizer;
     wxTextCtrl *nameTxt;
     wxTextCtrl *linkTxt;
+    wxTextCtrl *meetingTime[4]; // 0 is start hour, 1 is start minute, 2 is end hour, 3 is end minute
     wxStaticText *contactName;
     wxCheckBox *recurringDays[7];
 
