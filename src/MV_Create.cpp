@@ -1,7 +1,7 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/5/21
+// Last edited on 4/7/21
 
 // Resources:
 // https://docs.wxwidgets.org/3.0/overview_sizer.html
@@ -29,21 +29,21 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
 
     // Add prompt for the meeting name and a text field w/ limited characters to answer it
     // Add(wxSizer *sizer, const wxSizerFlags &flags)
-    dataSizer->Add(new wxStaticText(this, GetID(), "Meeting Name:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
-    nameTxt = new wxTextCtrl(this, GetID(), "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
+    dataSizer->Add(new wxStaticText(this, 0, "Meeting Name:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
+    nameTxt = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
     nameTxt->SetMaxLength(35);
     // Add(wxSizer *sizer, int proportion=0, int flag=0, int border=0, wxObject *userData=NULL)
     dataSizer->Add(nameTxt, 1, wxEXPAND | wxALL, 10);
 
     // Add prompt for contact name and a text field w/ limited characters to answer it
-    dataSizer->Add(new wxStaticText(this, GetID(), "Contact Name:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
-    contactTxt = new wxTextCtrl(this, GetID(), "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
+    dataSizer->Add(new wxStaticText(this, 0, "Contact Name:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
+    contactTxt = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
     contactTxt->SetMaxLength(35);
     dataSizer->Add(contactTxt, 1, wxEXPAND | wxALL, 10);
 
     // Add a prompt for the meeting link and a text field to answer it
-    dataSizer->Add(new wxStaticText(this, GetID(), "Meeting Link:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
-    linkTxt = new wxTextCtrl(this, GetID(), "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
+    dataSizer->Add(new wxStaticText(this, 0, "Meeting Link:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
+    linkTxt = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
     dataSizer->Add(linkTxt, 1, wxEXPAND | wxALL, 10);
 
     // Add all of these data entry fields to the top sizer
@@ -53,14 +53,30 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     wxCheckBox *recurringCheckBox = new wxCheckBox(this, ID_ToggleCheckBox, "This is a recurring meeting");
     topSizer->Add(recurringCheckBox, wxSizerFlags(0).Center());
 
+    // Set up a list of checkboxes for every day of the week and add each one to an array that can be accessed later
     wxBoxSizer *recurringDaysSizer = new wxBoxSizer(wxHORIZONTAL);
-    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Mon"), wxSizerFlags(0));
-    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Tue"), wxSizerFlags(0));
-    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Wed"), wxSizerFlags(0));
-    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Thur"), wxSizerFlags(0));
-    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Fri"), wxSizerFlags(0));
-    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Sat"), wxSizerFlags(0));
-    recurringDaysSizer->Add(new wxCheckBox(this, 0, "Sun"), wxSizerFlags(0));
+    wxCheckBox *mon = new wxCheckBox(this, 0, "Mon");
+    recurringDaysSizer->Add(mon, wxSizerFlags(0).Border(wxRIGHT, 5));
+    recurringDays[0] = mon;
+    wxCheckBox *tue = new wxCheckBox(this, 0, "Tue");
+    recurringDaysSizer->Add(tue, wxSizerFlags(0).Border(wxRIGHT, 5));
+    recurringDays[1] = tue;
+    wxCheckBox *wed = new wxCheckBox(this, 0, "Wed");
+    recurringDaysSizer->Add(wed, wxSizerFlags(0).Border(wxRIGHT, 5));
+    recurringDays[2] = wed;
+    wxCheckBox *thur = new wxCheckBox(this, 0, "Thur");
+    recurringDaysSizer->Add(thur, wxSizerFlags(0).Border(wxRIGHT, 5));
+    recurringDays[3] = thur;
+    wxCheckBox *fri = new wxCheckBox(this, 0, "Fri");
+    recurringDaysSizer->Add(fri, wxSizerFlags(0).Border(wxRIGHT, 5));
+    recurringDays[4] = fri;
+    wxCheckBox *sat = new wxCheckBox(this, 0, "Sat");
+    recurringDaysSizer->Add(sat, wxSizerFlags(0).Border(wxRIGHT, 5));
+    recurringDays[5] = sat;
+    wxCheckBox *sun = new wxCheckBox(this, 0, "Sun");
+    recurringDaysSizer->Add(sun, wxSizerFlags(0).Border(wxRIGHT, 5));
+    recurringDays[6] = sun;
+
     topSizer->Add(recurringDaysSizer, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT | wxUP, 10));
     topSizer->Hide(recurringDaysSizer);
     topSizer->Layout();
@@ -96,8 +112,39 @@ void MV_Create::OnCreate(wxCommandEvent& event)
             return;
     }
 
-    // Create a new Meeting object with the information in the text fields
-    Meeting *meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString());
+    Meeting *meeting;
+
+    if (recurring)
+    {
+        // Get the true/false values from all of the checkboxes for the days of the week and store in an array
+        bool _recurringDays[7] = {0};
+        bool dataEntered = false;
+        for (int i = 0; i < 7; i++)
+        {
+            _recurringDays[i] = recurringDays[i]->IsChecked();
+
+            if (!dataEntered && _recurringDays[i])
+                dataEntered = true;
+        }
+
+        // If no days were selected, alert the user and quit the function early
+        if (!dataEntered)
+        {
+            wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                "No days have been selected for this recurring meeting.\nPlease select at least one day.", "",
+                wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
+
+            if (warningDialog->ShowModal())
+                return;
+        }
+
+        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString());
+    }
+    else
+    {
+        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString());
+    }
+
     //****************************************************************************************************************
     // To-do: Add meeting to database (this might not need an object made here, but it's proof of concept, at least) *
     //****************************************************************************************************************
@@ -111,15 +158,18 @@ void MV_Create::OnRecurring(wxCommandEvent& event)
 {
     if (event.IsChecked())
     {
+        recurring = true;
         topSizer->Show((size_t) 2);
         SetSize(wxDefaultCoord, wxDefaultCoord, 450, 280);
     }
     else
     {
+        recurring = false;
         topSizer->Hide((size_t) 2);
         SetSize(wxDefaultCoord, wxDefaultCoord, 450, 250);
     }
 
+    // Fix the layout of the sizers to adapt to the shown/hidden list of checkboxes (must be called after every adjustment)
     topSizer->Layout();
 }
 
@@ -155,7 +205,12 @@ void MV_Create::OnClosed(wxCloseEvent& event)
     // doesn't entirely exit
     if (hub->FrameCount() == 0)
         hub->OpenFrame(FrameType::MVHead);
-    
+
+    for (int i = 0; i < 7; i++)
+    {
+        recurringDays[i] = nullptr;
+    }
+
     Destroy();
 }
 
