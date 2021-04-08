@@ -1,7 +1,8 @@
 // enum_EventID
 // MS: 3/14/21 - initial code
 // MS: 3/20/21 - added ID_OpenMVCreate
-// MS: 4/5/21 - added ID_ToggleCheckBox
+// MS: 4/5/21 - added ID_ToggleCheckBox (ambiguous wording so it can be reused)
+// MS: 4/7/21 - added ID_MainButton (ambiguous wording so it can be reused)
 
 #ifndef ENUM_EVENT_ID
 #define ENUM_EVENT_ID
@@ -12,7 +13,8 @@ enum
     ID_OpenTempHome = 2,
     ID_OpenMVHead = 3,
     ID_OpenMVCreate = 4,
-    ID_ToggleCheckBox = 5
+    ID_ToggleCheckBox = 5,
+    ID_MainButton = 6
 };
 
 #endif

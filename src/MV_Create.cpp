@@ -29,29 +29,38 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
 
     // Add prompt for the meeting name and a text field w/ limited characters to answer it
     // Add(wxSizer *sizer, const wxSizerFlags &flags)
-    dataSizer->Add(new wxStaticText(this, 0, "Meeting Name:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
+    dataSizer->Add(new wxStaticText(this, 0, "Meeting Name:", wxDefaultPosition, wxDefaultSize), labelFlags);
     nameTxt = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
     nameTxt->SetMaxLength(35);
     // Add(wxSizer *sizer, int proportion=0, int flag=0, int border=0, wxObject *userData=NULL)
     dataSizer->Add(nameTxt, 1, wxEXPAND | wxALL, 10);
 
-    // Add prompt for contact name and a text field w/ limited characters to answer it
-    dataSizer->Add(new wxStaticText(this, 0, "Contact Name:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
-    contactTxt = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
-    contactTxt->SetMaxLength(35);
-    dataSizer->Add(contactTxt, 1, wxEXPAND | wxALL, 10);
-
     // Add a prompt for the meeting link and a text field to answer it
-    dataSizer->Add(new wxStaticText(this, 0, "Meeting Link:", wxDefaultPosition, wxDefaultSize, 0, ""), labelFlags);
+    dataSizer->Add(new wxStaticText(this, 0, "Meeting Link:", wxDefaultPosition, wxDefaultSize), labelFlags);
     linkTxt = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(300, 25), wxTE_DONTWRAP);
     dataSizer->Add(linkTxt, 1, wxEXPAND | wxALL, 10);
+
+    // Add two labels and a button for choosing the contact for this meeting
+    wxBoxSizer *contactSizer = new wxBoxSizer(wxHORIZONTAL);
+    dataSizer->Add(new wxStaticText(this, 0, "Contact Name:", wxDefaultPosition, wxDefaultSize), labelFlags);
+    contactName = new wxStaticText(this, 0, "none", wxDefaultPosition, wxDefaultSize);
+    wxFont font = contactName->GetFont();
+    font.MakeItalic();
+    contactName->SetFont(font);
+    contactSizer->Add(contactName, 1, wxEXPAND | wxALL, 10);
+    wxButton *contactButton = new wxButton(this, ID_MainButton, "Choose Contact", wxPoint(0, 15), wxSize(100, 25), wxBU_EXACTFIT);
+    font = contactButton->GetFont();
+    font.MakeSmaller();
+    contactButton->SetFont(font);
+    contactSizer->Add(contactButton, wxSizerFlags(0).Center().Border(wxLEFT, 15));
+    dataSizer->Add(contactSizer, wxSizerFlags(0));
 
     // Add all of these data entry fields to the top sizer
     topSizer->Add(dataSizer, wxSizerFlags(0).Center());
 
     // Create the checkbox to indicate a recurring meeting and add it to the top sizer
     wxCheckBox *recurringCheckBox = new wxCheckBox(this, ID_ToggleCheckBox, "This is a recurring meeting");
-    topSizer->Add(recurringCheckBox, wxSizerFlags(0).Center());
+    topSizer->Add(recurringCheckBox, wxSizerFlags(0).Center().Border(wxUP, 10));
 
     // Set up a list of checkboxes for every day of the week and add each one to an array that can be accessed later
     wxBoxSizer *recurringDaysSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -85,7 +94,7 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"), wxSizerFlags(0).Border(wxALL, 10));
     buttonSizer->Add(new wxButton(this, wxID_OK, "Create"), wxSizerFlags(0).Border(wxALL, 10));
-    topSizer->Add(buttonSizer, wxSizerFlags(0).Center());
+    topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 5));
     
     SetSizer(topSizer);
 }
@@ -102,7 +111,7 @@ FrameType MV_Create::GetFrameType()
 void MV_Create::OnCreate(wxCommandEvent& event)
 {
     // If a required field is empty, warn the user and quit the method early
-    if (nameTxt->GetLineLength(0) == 0 || contactTxt->GetLineLength(0) == 0 || linkTxt->GetLineLength(0) == 0)
+    if (nameTxt->GetLineLength(0) == 0 || linkTxt->GetLineLength(0) == 0)
     {
         wxMessageDialog *warningDialog = new wxMessageDialog(this,
                 "One or more required fields are missing data.\nPlease fill out the fields and try again.", "",
@@ -138,7 +147,7 @@ void MV_Create::OnCreate(wxCommandEvent& event)
                 return;
         }
 
-        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString());
+        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(), _recurringDays);
     }
     else
     {
@@ -148,10 +157,51 @@ void MV_Create::OnCreate(wxCommandEvent& event)
     //****************************************************************************************************************
     // To-do: Add meeting to database (this might not need an object made here, but it's proof of concept, at least) *
     //****************************************************************************************************************
-    //std::cout << "Name: " << meeting->GetName() << "\nLink: " << meeting->GetLink() << "\n";
     delete(meeting);
 
     Close(true);
+}
+
+void MV_Create::OnChooseContact(wxCommandEvent& event)
+{
+    // Rather than being created here, the next line should call the user data class to be given the list of contacts
+    // and then simply add the "New Contact" and "No Contact" options at the beginning.
+    wxString contacts[5] = { wxString("New Contact"), wxString("No Contact"), wxString("Person A"), wxString("Person B"), wxString("Person C") };
+
+    wxSingleChoiceDialog *contactDialog = new wxSingleChoiceDialog(this, "Select the contact", "", 5, contacts);
+    if (contactDialog->ShowModal() == wxID_OK)
+    {
+        if (contactDialog->GetSelection() == 0)
+        {
+            // Time for dialogs within dialogs! Ask the user to enter the name of the new contact.
+            wxTextEntryDialog *newContactDialog = new wxTextEntryDialog(this, "Enter the name of the new contact.", "");
+            newContactDialog->SetMaxLength(30);
+            if (newContactDialog->ShowModal() == wxID_OK)
+            {
+                //**************************************************
+                // To-do: This should create a new contact object. *
+                //**************************************************
+                contactName->SetLabel(newContactDialog->GetValue());
+            }
+        }
+        else if (contactDialog->GetSelection() == 1)
+        {
+            //********************************************************************
+            // To-do: This should remove the contact object from various things. *
+            //********************************************************************
+            contactName->SetLabel("none");
+        }
+        else
+        {
+            //************************************************************************
+            // To-do: This should assign an actual contact object to various things. *
+            //************************************************************************
+            contactName->SetLabel(contacts[contactDialog->GetSelection()]);
+        }
+    }
+
+    // Fix the layout of the sizers to adapt to the shown/hidden list of checkboxes (must be called after every adjustment)
+    topSizer->Layout();
 }
 
 void MV_Create::OnRecurring(wxCommandEvent& event)
@@ -160,13 +210,13 @@ void MV_Create::OnRecurring(wxCommandEvent& event)
     {
         recurring = true;
         topSizer->Show((size_t) 2);
-        SetSize(wxDefaultCoord, wxDefaultCoord, 450, 280);
+        SetSize(wxDefaultCoord, wxDefaultCoord, 450, 300);
     }
     else
     {
         recurring = false;
         topSizer->Hide((size_t) 2);
-        SetSize(wxDefaultCoord, wxDefaultCoord, 450, 250);
+        SetSize(wxDefaultCoord, wxDefaultCoord, 450, 270);
     }
 
     // Fix the layout of the sizers to adapt to the shown/hidden list of checkboxes (must be called after every adjustment)
@@ -183,7 +233,7 @@ void MV_Create::OnCancel(wxCommandEvent& event)
 void MV_Create::OnClosed(wxCloseEvent& event)
 {
     // If any data has been entered in this window, check with the user if they really want to quit (if allowed to)
-    if (event.CanVeto() && (nameTxt->GetLineLength(0) > 0 || contactTxt->GetLineLength(0) > 0 || linkTxt->GetLineLength(0) > 0))
+    if (event.CanVeto() && (nameTxt->GetLineLength(0) > 0 || linkTxt->GetLineLength(0) > 0))
     {
         wxMessageDialog *closeDialog = new wxMessageDialog(this,
                 "This window contains unsaved data.\nAre you sure you want to close it?", "",
@@ -217,6 +267,7 @@ void MV_Create::OnClosed(wxCloseEvent& event)
 wxBEGIN_EVENT_TABLE(MV_Create, wxFrame)
     EVT_BUTTON(wxID_CANCEL, MV_Create::OnCancel)
     EVT_BUTTON(wxID_OK, MV_Create::OnCreate)
+    EVT_BUTTON(ID_MainButton, MV_Create::OnChooseContact)
     EVT_CHECKBOX(ID_ToggleCheckBox, MV_Create::OnRecurring)
     EVT_CLOSE(MV_Create::OnClosed)
 wxEND_EVENT_TABLE()

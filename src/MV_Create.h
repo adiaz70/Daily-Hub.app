@@ -1,7 +1,7 @@
 // MV_Create.h -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/6/21
+// Last edited on 4/7/21
 
 #ifndef MV_CREATE_H
 #define MV_CREATE_H
@@ -21,13 +21,14 @@ public:
 private:
     void OnCreate(wxCommandEvent& event);
     void OnCancel(wxCommandEvent& event);
+    void OnChooseContact(wxCommandEvent& event);
     void OnRecurring(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
 
     wxBoxSizer *topSizer;
     wxTextCtrl *nameTxt;
-    wxTextCtrl *contactTxt;
     wxTextCtrl *linkTxt;
+    wxStaticText *contactName;
     wxCheckBox *recurringDays[7];
 
     DailyHub *hub;
