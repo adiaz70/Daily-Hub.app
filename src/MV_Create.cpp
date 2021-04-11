@@ -70,13 +70,11 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     meetingTime[1]->SetMaxLength(2);
     startTimeSizer->Add(meetingTime[1], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
     // Add the AM/PM buttons
-    wxToggleButton *startAM = new wxToggleButton(this, ID_ToggleButton, "AM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
-    startAM->SetValue(true);
-    startTimeSizer->Add(startAM, wxSizerFlags(0).Center().Border(wxLEFT, 10));
-    meetingAM_PM[0] = startAM;
-    wxToggleButton *startPM = new wxToggleButton(this, ID_ToggleButton, "PM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
-    startTimeSizer->Add(startPM, wxSizerFlags(0).Center());
-    meetingAM_PM[1] = startPM;
+    meetingAM_PM[0] = new wxToggleButton(this, ID_ToggleButton, "AM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
+    meetingAM_PM[0]->SetValue(true);
+    startTimeSizer->Add(meetingAM_PM[0], wxSizerFlags(0).Center().Border(wxLEFT, 10));
+    meetingAM_PM[1] = new wxToggleButton(this, ID_ToggleButton, "PM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
+    startTimeSizer->Add(meetingAM_PM[1], wxSizerFlags(0).Center());
     dataSizer->Add(startTimeSizer, wxSizerFlags(0));
 
     // Repeat with the end time by starting with a label
@@ -91,13 +89,11 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     meetingTime[3]->SetMaxLength(2);
     endTimeSizer->Add(meetingTime[3], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
     // And adding the AM/PM buttons
-    wxToggleButton *endAM = new wxToggleButton(this, ID_ToggleButton, "AM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
-    endAM->SetValue(true);
-    endTimeSizer->Add(endAM, wxSizerFlags(0).Center().Border(wxLEFT, 10));
-    meetingAM_PM[2] = endAM;
-    wxToggleButton *endPM = new wxToggleButton(this, ID_ToggleButton, "PM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
-    endTimeSizer->Add(endPM, wxSizerFlags(0).Center());
-    meetingAM_PM[3] = endPM;
+    meetingAM_PM[2] = new wxToggleButton(this, ID_ToggleButton, "AM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
+    meetingAM_PM[2]->SetValue(true);
+    endTimeSizer->Add(meetingAM_PM[2], wxSizerFlags(0).Center().Border(wxLEFT, 10));
+    meetingAM_PM[3] = new wxToggleButton(this, ID_ToggleButton, "PM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
+    endTimeSizer->Add(meetingAM_PM[3], wxSizerFlags(0).Center());
     dataSizer->Add(endTimeSizer, wxSizerFlags(0));
 
     // Add all of these data entry fields to the top sizer
@@ -109,36 +105,85 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
 
     // Set up a list of checkboxes for every day of the week and add each one to an array that can be accessed later
     wxBoxSizer *recurringDaysSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxCheckBox *mon = new wxCheckBox(this, 0, "Mon");
-    recurringDaysSizer->Add(mon, wxSizerFlags(0).Border(wxRIGHT, 5));
-    recurringDays[0] = mon;
-    wxCheckBox *tue = new wxCheckBox(this, 0, "Tue");
-    recurringDaysSizer->Add(tue, wxSizerFlags(0).Border(wxRIGHT, 5));
-    recurringDays[1] = tue;
-    wxCheckBox *wed = new wxCheckBox(this, 0, "Wed");
-    recurringDaysSizer->Add(wed, wxSizerFlags(0).Border(wxRIGHT, 5));
-    recurringDays[2] = wed;
-    wxCheckBox *thur = new wxCheckBox(this, 0, "Thur");
-    recurringDaysSizer->Add(thur, wxSizerFlags(0).Border(wxRIGHT, 5));
-    recurringDays[3] = thur;
-    wxCheckBox *fri = new wxCheckBox(this, 0, "Fri");
-    recurringDaysSizer->Add(fri, wxSizerFlags(0).Border(wxRIGHT, 5));
-    recurringDays[4] = fri;
-    wxCheckBox *sat = new wxCheckBox(this, 0, "Sat");
-    recurringDaysSizer->Add(sat, wxSizerFlags(0).Border(wxRIGHT, 5));
-    recurringDays[5] = sat;
-    wxCheckBox *sun = new wxCheckBox(this, 0, "Sun");
-    recurringDaysSizer->Add(sun, wxSizerFlags(0).Border(wxRIGHT, 5));
-    recurringDays[6] = sun;
+    wxString days[7] = { wxString("Mon"), wxString("Tue"), wxString("Wed"), wxString("Thur"), wxString("Fri"), wxString("Sat"), wxString("Sun") };
+    for (int i = 0; i < 7; i++)
+    {
+        recurringDays[i] = new wxCheckBox(this, 0, days[i]);
+        recurringDaysSizer->Add(recurringDays[i], wxSizerFlags(0).Border(wxRIGHT, 5));
+    }
 
     topSizer->Add(recurringDaysSizer, wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT | wxUP, 15));
     topSizer->Hide(recurringDaysSizer);
     topSizer->Layout();
 
+    // Add a little empty space to help with the window layout
+    topSizer->Add(20, 10);
+
+    // Create the text entry fields for entering the date of a meeting that does not recur
+    wxBoxSizer *singleDateSizer = new wxBoxSizer(wxHORIZONTAL);
+    singleDateSizer->Add(new wxStaticText(this, 0, "Meeting Date:"), labelFlags);
+    singleDateSizer->Add(5, 5);
+    wxTextCtrl *singleDateEntries[3];
+    for (int i = 0; i < 3; i++)
+    {
+        singleDateEntries[i] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+        singleDateEntries[i]->SetMaxLength(2);
+        if (i == 0)
+            singleDateSizer->Add(singleDateEntries[i], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
+        else
+            singleDateSizer->Add(singleDateEntries[i], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
+
+        if (i != 2)
+            singleDateSizer->Add(new wxStaticText(this, 0, "/"), wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT, 2));
+    }
+    topSizer->Add(singleDateSizer, wxSizerFlags(0).Border(wxLEFT, 35));
+
+    // Also create the text entry fields for the start and end dates of a recurring meeting
+    // Start with the start date
+    wxBoxSizer *startDateSizer = new wxBoxSizer(wxHORIZONTAL);
+    startDateSizer->Add(new wxStaticText(this, 0, "Start Date:"), labelFlags);
+    startDateSizer->Add(5, 5);
+    wxTextCtrl *startDateEntries[3];
+    for (int i = 0; i < 3; i++)
+    {
+        startDateEntries[i] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+        startDateEntries[i]->SetMaxLength(2);
+        if (i == 0)
+            startDateSizer->Add(startDateEntries[i], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
+        else
+            startDateSizer->Add(startDateEntries[i], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
+
+        if (i != 2)
+            startDateSizer->Add(new wxStaticText(this, 0, "/"), wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT, 2));
+    }
+    topSizer->Add(startDateSizer, wxSizerFlags(0).Border(wxLEFT, 55));
+    // Then repeat with the end date
+    wxBoxSizer *endDateSizer = new wxBoxSizer(wxHORIZONTAL);
+    endDateSizer->Add(new wxStaticText(this, 0, "End Date:"), labelFlags);
+    endDateSizer->Add(5, 5);
+    wxTextCtrl *endDateEntries[3];
+    for (int i = 0; i < 3; i++)
+    {
+        endDateEntries[i] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+        endDateEntries[i]->SetMaxLength(2);
+        if (i == 0)
+            endDateSizer->Add(endDateEntries[i], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
+        else
+            endDateSizer->Add(endDateEntries[i], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
+
+        if (i != 2)
+            endDateSizer->Add(new wxStaticText(this, 0, "/"), wxSizerFlags(0).Center().Border(wxLEFT | wxRIGHT, 2));
+    }
+    topSizer->Add(endDateSizer, wxSizerFlags(0).Border(wxLEFT, 65));
+    // Then hide both of them until the meeting is marked as recurring
+    topSizer->Hide(startDateSizer);
+    topSizer->Hide(endDateSizer);
+    topSizer->Layout();
+
     // Add the buttons at the bottom of the window and add them to the top sizer
     wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-    buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"), wxSizerFlags(0).Border(wxALL, 10));
-    buttonSizer->Add(new wxButton(this, wxID_OK, "Create"), wxSizerFlags(0).Border(wxALL, 10));
+    buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
+    buttonSizer->Add(new wxButton(this, wxID_OK, "Create"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 10));
     
     SetSizer(topSizer);
@@ -259,13 +304,19 @@ void MV_Create::OnRecurring(wxCommandEvent& event)
     {
         recurring = true;
         topSizer->Show((size_t) 2);
-        SetSize(wxDefaultCoord, wxDefaultCoord, 460, 380);
+        topSizer->Hide((size_t) 4);
+        topSizer->Show((size_t) 5);
+        topSizer->Show((size_t) 6);
+        SetSize(wxDefaultCoord, wxDefaultCoord, 460, 485);
     }
     else
     {
         recurring = false;
         topSizer->Hide((size_t) 2);
-        SetSize(wxDefaultCoord, wxDefaultCoord, 460, 350);
+        topSizer->Show((size_t) 4);
+        topSizer->Hide((size_t) 5);
+        topSizer->Hide((size_t) 6);
+        SetSize(wxDefaultCoord, wxDefaultCoord, 460, 405);
     }
 
     // Fix the layout of the sizers to adapt to the shown/hidden list of checkboxes (must be called after every adjustment)
@@ -277,13 +328,21 @@ void MV_Create::ToggleAM_PM(wxCommandEvent& event)
 {
     if (meetingAM_PM[0]->GetValue() + meetingAM_PM[1]->GetValue() != 1)
     {
-        isStartAM = !isStartAM;
+        // Only alter the button states if the clicked toggle button was previously unselected
+        // Otherwise, revert them to their previous states
+        if (event.IsChecked())
+            isStartAM = !isStartAM;
+
         meetingAM_PM[0]->SetValue(isStartAM);
         meetingAM_PM[1]->SetValue(!isStartAM);
     }
     else
     {
-        isEndAM = !isEndAM;
+        // Only alter the button states if the clicked toggle button was previously unselected
+        // Otherwise, revert them to their previous states
+        if (event.IsChecked())
+            isEndAM = !isEndAM;
+
         meetingAM_PM[2]->SetValue(isEndAM);
         meetingAM_PM[3]->SetValue(!isEndAM);
     }
