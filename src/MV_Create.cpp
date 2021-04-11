@@ -1,7 +1,7 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/8/21
+// Last edited on 4/10/21
 
 // Resources:
 // https://docs.wxwidgets.org/3.0/overview_sizer.html
@@ -55,29 +55,49 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     contactSizer->Add(contactButton, wxSizerFlags(0).Center().Border(wxLEFT, 15));
     dataSizer->Add(contactSizer, wxSizerFlags(0));
 
-    // Add everything need to enter the start and end time for this meeting
+    // Create everything needed to enter the start and end time for this meeting
     wxTextValidator validator(wxFILTER_DIGITS);
 
+    // Start with a simple label
     dataSizer->Add(new wxStaticText(this, 0, "Start Time:", wxDefaultPosition, wxDefaultSize), labelFlags);
     wxBoxSizer *startTimeSizer = new wxBoxSizer(wxHORIZONTAL);
+    // Then add two empty text fields that can hold up to two digits with a colon in between them
     meetingTime[0] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
     meetingTime[0]->SetMaxLength(2);
     startTimeSizer->Add(meetingTime[0], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
     startTimeSizer->Add(new wxStaticText(this, 0, ":", wxDefaultPosition, wxDefaultSize), wxSizerFlags(0).Center().Border(wxLEFT, 1));
     meetingTime[1] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
     meetingTime[1]->SetMaxLength(2);
-    startTimeSizer->Add(meetingTime[1], wxSizerFlags(0).Center().Border(wxUP | wxRIGHT | wxDOWN, 10));
+    startTimeSizer->Add(meetingTime[1], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
+    // Add the AM/PM buttons
+    wxToggleButton *startAM = new wxToggleButton(this, ID_ToggleButton, "AM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
+    startAM->SetValue(true);
+    startTimeSizer->Add(startAM, wxSizerFlags(0).Center().Border(wxLEFT, 10));
+    meetingAM_PM[0] = startAM;
+    wxToggleButton *startPM = new wxToggleButton(this, ID_ToggleButton, "PM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
+    startTimeSizer->Add(startPM, wxSizerFlags(0).Center());
+    meetingAM_PM[1] = startPM;
     dataSizer->Add(startTimeSizer, wxSizerFlags(0));
 
+    // Repeat with the end time by starting with a label
     dataSizer->Add(new wxStaticText(this, 0, "End Time:", wxDefaultPosition, wxDefaultSize), labelFlags);
     wxBoxSizer *endTimeSizer = new wxBoxSizer(wxHORIZONTAL);
+    // Adding the two text fields with a colon between them
     meetingTime[2] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
     meetingTime[2]->SetMaxLength(2);
     endTimeSizer->Add(meetingTime[2], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
     endTimeSizer->Add(new wxStaticText(this, 0, ":", wxDefaultPosition, wxDefaultSize), wxSizerFlags(0).Center().Border(wxLEFT, 1));
     meetingTime[3] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
     meetingTime[3]->SetMaxLength(2);
-    endTimeSizer->Add(meetingTime[3], wxSizerFlags(0).Center().Border(wxUP | wxRIGHT | wxDOWN, 10));
+    endTimeSizer->Add(meetingTime[3], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
+    // And adding the AM/PM buttons
+    wxToggleButton *endAM = new wxToggleButton(this, ID_ToggleButton, "AM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
+    endAM->SetValue(true);
+    endTimeSizer->Add(endAM, wxSizerFlags(0).Center().Border(wxLEFT, 10));
+    meetingAM_PM[2] = endAM;
+    wxToggleButton *endPM = new wxToggleButton(this, ID_ToggleButton, "PM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
+    endTimeSizer->Add(endPM, wxSizerFlags(0).Center());
+    meetingAM_PM[3] = endPM;
     dataSizer->Add(endTimeSizer, wxSizerFlags(0));
 
     // Add all of these data entry fields to the top sizer
@@ -252,6 +272,23 @@ void MV_Create::OnRecurring(wxCommandEvent& event)
     topSizer->Layout();
 }
 
+// When any of the AM/PM buttons are toggled, make sure the its pair is also toggled so that only one is selected at a time
+void MV_Create::ToggleAM_PM(wxCommandEvent& event)
+{
+    if (meetingAM_PM[0]->GetValue() + meetingAM_PM[1]->GetValue() != 1)
+    {
+        isStartAM = !isStartAM;
+        meetingAM_PM[0]->SetValue(isStartAM);
+        meetingAM_PM[1]->SetValue(!isStartAM);
+    }
+    else
+    {
+        isEndAM = !isEndAM;
+        meetingAM_PM[2]->SetValue(isEndAM);
+        meetingAM_PM[3]->SetValue(!isEndAM);
+    }
+}
+
 void MV_Create::OnCancel(wxCommandEvent& event)
 {
     Close(false); // false indicates that this command can be vetoed if the user chooses
@@ -290,6 +327,11 @@ void MV_Create::OnClosed(wxCloseEvent& event)
         recurringDays[i] = nullptr;
     }
 
+    for (int i = 0; i < 4; i++)
+    {
+        meetingAM_PM[i] = nullptr;
+    }
+
     Destroy();
 }
 
@@ -297,6 +339,7 @@ wxBEGIN_EVENT_TABLE(MV_Create, wxFrame)
     EVT_BUTTON(wxID_CANCEL, MV_Create::OnCancel)
     EVT_BUTTON(wxID_OK, MV_Create::OnCreate)
     EVT_BUTTON(ID_MainButton, MV_Create::OnChooseContact)
+    EVT_TOGGLEBUTTON(ID_ToggleButton, MV_Create::ToggleAM_PM)
     EVT_CHECKBOX(ID_ToggleCheckBox, MV_Create::OnRecurring)
     EVT_CLOSE(MV_Create::OnClosed)
 wxEND_EVENT_TABLE()
