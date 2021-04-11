@@ -5,6 +5,8 @@
 // g++ *.cpp *.h `wx-config --cxxflags --libs` -o test
 
 #include "CV_Head.h"
+#include <wx/splitter.h>
+#include <wx/sizer.h>
 
 CV_Head::CV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub)
         : HubFrame("Daily Hub - Contacts", id, pos, size)
@@ -20,6 +22,32 @@ CV_Head::CV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub*
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
     SetMenuBar(menuBar);
+
+    wxBoxSizer *mainsizer = new wxBoxSizer(wxVERTICAL);         /*create a main sizer*/
+    wxSplitterWindow *splittermain = new wxSplitterWindow(this,wxID_ANY);
+    mainsizer->Add(splittermain, 1, wxLEFT|wxEXPAND, 5);
+       
+    wxPanel *panelContact = new wxPanel(splittermain,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER);   /*Create a sizer for contacts*/
+    wxStaticBoxSizer *conSizer = new wxStaticBoxSizer(wxHORIZONTAL,panelContact,_T("Contacts"));
+
+    conSizer->SetMinSize(550,-1);
+    wxTextCtrl *txt1 = new wxTextCtrl( panelContact, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+    conSizer->Add(txt1,1,wxALL|wxEXPAND,5);
+    panelContact->SetSizer(conSizer);
+       
+    wxPanel *panelInfo = new wxPanel(splittermain,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER);   /*create a sizer for contact infor*/
+    wxStaticBoxSizer *infoSizer = new wxStaticBoxSizer(wxHORIZONTAL,panelInfo,_T("Contact Info"));
+
+    infoSizer->SetMinSize(550,-1);
+    wxTextCtrl *txt2 = new wxTextCtrl( panelInfo, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+    infoSizer->Add(txt2,1,wxALL|wxEXPAND,5);
+    panelInfo->SetSizer(infoSizer);
+       
+    splittermain->SetSashGravity(0.25);     /*This changes how much 'space' the contacts sizer will take*/
+    splittermain->SplitVertically(panelContact, panelInfo);        /*put both sizers in the main sizer*/
+       
+    SetSizer(mainsizer);
+    mainsizer->SetSizeHints(this);
 }
 
 FrameType CV_Head::GetFrameType()
@@ -34,7 +62,7 @@ void CV_Head::OnOpenHome(wxCommandEvent& event)
 
 void CV_Head::OnOpenCVHead(wxCommandEvent& event)
 {
-    hub->OpenFrame(FrameType::CVHead);
+    hub->OpenFrame(FrameType::CVHead);  //open unsplit window
 }
 
 void CV_Head::OnExit(wxCommandEvent& event)
