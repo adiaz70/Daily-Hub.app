@@ -5,6 +5,7 @@
 #include "DailyHub.h"
 #include "TempHomeFrame.h"
 #include "MV_Head.h"
+#include "CV_Head.h"
 #include "MV_Create.h"
 #include "enum_EventID"
 
@@ -50,6 +51,7 @@ void DailyHub::OpenFrame(FrameType id)
         case FrameType::TempHome: frames.push_back(new TempHomeFrame(NewFrameID(), wxPoint(50, 50), wxSize(550, 440), this)); break;
         case FrameType::MVHead: frames.push_back(new MV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
         case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(460, 405), this)); break;
+        case FrameType::CVHead: frames.push_back(new CV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
         default: return;
     }
 

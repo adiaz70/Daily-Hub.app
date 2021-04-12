@@ -11,7 +11,8 @@ enum FrameType
 {
     TempHome = 1,
     MVHead = 2,
-    MVCreate = 3
+    CVHead = 3,
+    MVCreate = 4
 };
 
 #endif

@@ -13,10 +13,11 @@ enum
     ID_CloseFrame = 1,
     ID_OpenTempHome = 2,
     ID_OpenMVHead = 3,
-    ID_OpenMVCreate = 4,
-    ID_ToggleCheckBox = 5,
-    ID_ToggleButton = 6,
-    ID_MainButton = 7
+    ID_OpenCVHead = 4,
+    ID_OpenMVCreate = 5,
+    ID_ToggleCheckBox = 6,
+    ID_ToggleButton = 7,
+    ID_MainButton = 8
 };
 
 #endif

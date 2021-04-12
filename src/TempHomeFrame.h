@@ -21,6 +21,7 @@ public:
 
 private:
     void OnOpenMVHead(wxCommandEvent& event);
+    void OnOpenCVHead(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);
