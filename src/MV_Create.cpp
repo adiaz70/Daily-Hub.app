@@ -1,7 +1,7 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/10/21
+// Last edited on 4/11/21
 
 // Resources:
 // https://docs.wxwidgets.org/3.0/overview_sizer.html
@@ -11,6 +11,7 @@
 
 #include "MV_Create.h"
 #include "Meeting.h"
+#include "MeetingTime.h"
 
 //***************************
 // Public member functions. *
@@ -62,13 +63,13 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     dataSizer->Add(new wxStaticText(this, 0, "Start Time:", wxDefaultPosition, wxDefaultSize), labelFlags);
     wxBoxSizer *startTimeSizer = new wxBoxSizer(wxHORIZONTAL);
     // Then add two empty text fields that can hold up to two digits with a colon in between them
-    meetingTime[0] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
-    meetingTime[0]->SetMaxLength(2);
-    startTimeSizer->Add(meetingTime[0], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
+    meetingTimeEntries[0] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+    meetingTimeEntries[0]->SetMaxLength(2);
+    startTimeSizer->Add(meetingTimeEntries[0], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
     startTimeSizer->Add(new wxStaticText(this, 0, ":", wxDefaultPosition, wxDefaultSize), wxSizerFlags(0).Center().Border(wxLEFT, 1));
-    meetingTime[1] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
-    meetingTime[1]->SetMaxLength(2);
-    startTimeSizer->Add(meetingTime[1], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
+    meetingTimeEntries[1] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+    meetingTimeEntries[1]->SetMaxLength(2);
+    startTimeSizer->Add(meetingTimeEntries[1], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
     // Add the AM/PM buttons
     meetingAM_PM[0] = new wxToggleButton(this, ID_ToggleButton, "AM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
     meetingAM_PM[0]->SetValue(true);
@@ -81,13 +82,13 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     dataSizer->Add(new wxStaticText(this, 0, "End Time:", wxDefaultPosition, wxDefaultSize), labelFlags);
     wxBoxSizer *endTimeSizer = new wxBoxSizer(wxHORIZONTAL);
     // Adding the two text fields with a colon between them
-    meetingTime[2] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
-    meetingTime[2]->SetMaxLength(2);
-    endTimeSizer->Add(meetingTime[2], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
+    meetingTimeEntries[2] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+    meetingTimeEntries[2]->SetMaxLength(2);
+    endTimeSizer->Add(meetingTimeEntries[2], wxSizerFlags(0).Center().Border(wxUP | wxLEFT | wxDOWN, 10));
     endTimeSizer->Add(new wxStaticText(this, 0, ":", wxDefaultPosition, wxDefaultSize), wxSizerFlags(0).Center().Border(wxLEFT, 1));
-    meetingTime[3] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
-    meetingTime[3]->SetMaxLength(2);
-    endTimeSizer->Add(meetingTime[3], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
+    meetingTimeEntries[3] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
+    meetingTimeEntries[3]->SetMaxLength(2);
+    endTimeSizer->Add(meetingTimeEntries[3], wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 10));
     // And adding the AM/PM buttons
     meetingAM_PM[2] = new wxToggleButton(this, ID_ToggleButton, "AM", wxPoint(0, 15), wxSize(40, 25), wxBU_EXACTFIT);
     meetingAM_PM[2]->SetValue(true);
@@ -117,13 +118,12 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     topSizer->Layout();
 
     // Add a little empty space to help with the window layout
-    topSizer->Add(20, 10);
+    topSizer->Add(20, 5);
 
     // Create the text entry fields for entering the date of a meeting that does not recur
     wxBoxSizer *singleDateSizer = new wxBoxSizer(wxHORIZONTAL);
     singleDateSizer->Add(new wxStaticText(this, 0, "Meeting Date:"), labelFlags);
     singleDateSizer->Add(5, 5);
-    wxTextCtrl *singleDateEntries[3];
     for (int i = 0; i < 3; i++)
     {
         singleDateEntries[i] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
@@ -143,7 +143,6 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     wxBoxSizer *startDateSizer = new wxBoxSizer(wxHORIZONTAL);
     startDateSizer->Add(new wxStaticText(this, 0, "Start Date:"), labelFlags);
     startDateSizer->Add(5, 5);
-    wxTextCtrl *startDateEntries[3];
     for (int i = 0; i < 3; i++)
     {
         startDateEntries[i] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
@@ -161,7 +160,6 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, Daily
     wxBoxSizer *endDateSizer = new wxBoxSizer(wxHORIZONTAL);
     endDateSizer->Add(new wxStaticText(this, 0, "End Date:"), labelFlags);
     endDateSizer->Add(5, 5);
-    wxTextCtrl *endDateEntries[3];
     for (int i = 0; i < 3; i++)
     {
         endDateEntries[i] = new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(35, 25), wxTE_DONTWRAP, validator);
@@ -200,23 +198,57 @@ FrameType MV_Create::GetFrameType()
 
 void MV_Create::OnCreate(wxCommandEvent& event)
 {
-    // If a required field is empty, warn the user and quit the method early
-    if (nameTxt->GetLineLength(0) == 0 || linkTxt->GetLineLength(0) == 0)
+    //*******************************************************************************************************************
+    // Before the meeting can be created, run a series of checks on the data and notify the user if something is wrong. *
+    //*******************************************************************************************************************
+
+    // Confirm that the meeting name has been entered
+    if (nameTxt->GetLineLength(0) == 0)
     {
         wxMessageDialog *warningDialog = new wxMessageDialog(this,
-                "One or more required fields are missing data.\nPlease fill out the fields and try again.", "",
-                wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
+                "Please enter the name of the meeting.", "", wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
 
         if (warningDialog->ShowModal())
             return;
     }
 
-    //*****************************************************************
-    // To-do: Validate that the entered times are logically possible. *
-    //*****************************************************************
+    // Confirm that the start and end time for the meeting has been entered and is valid
+    MeetingTime *meetingTime;
+    if (meetingTimeEntries[0]->GetLineLength(0) != 0 && meetingTimeEntries[1]->GetLineLength(0) != 0 &&
+        meetingTimeEntries[2]->GetLineLength(0) != 0 && meetingTimeEntries[3]->GetLineLength(0) != 0)
+    {
+        int times[4];
+        for (int i = 0; i < 4; i++)
+        {
+            times[i] = std::stoi(meetingTimeEntries[i]->GetValue().ToStdString());
+        }
 
+        meetingTime = new MeetingTime(times, isStartAM, isEndAM);
+
+        if (!meetingTime->IsValidTime())
+        {
+            wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                "The start or end time is not valid.\nPlease review and try again.", "",
+                wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
+
+            if (warningDialog->ShowModal())
+            {
+                delete(meetingTime);
+                return;
+            }
+        }
+    }
+    else
+    {
+        wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                "Please enter the start and end time.", "", wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
+
+        if (warningDialog->ShowModal())
+            return;
+    }
+
+    // The remainder of items that need to be validated depend on whether or not the meeting is recurring
     Meeting *meeting;
-
     if (recurring)
     {
         // Get the true/false values from all of the checkboxes for the days of the week and store in an array
@@ -241,16 +273,75 @@ void MV_Create::OnCreate(wxCommandEvent& event)
                 return;
         }
 
+        // Then, check that the start and end dates have been entered in full
+        int startDate[3];
+        int endDate[3];
+        for (int i = 0; i < 3; i++)
+        {
+            if (startDateEntries[i]->GetLineLength(0) == 0 || endDateEntries[i]->GetLineLength(0) == 0)
+            {
+                wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                    "Please enter a start and end date for this meeting.", "", wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
+
+                if (warningDialog->ShowModal())
+                    return;
+            }
+
+            startDate[i] = std::stoi(startDateEntries[i]->GetValue().ToStdString());
+            endDate[i] = std::stoi(endDateEntries[i]->GetValue().ToStdString());
+        }
+
+        // Check that both of these dates are valid and occur in the proper order
+        if (!IsValidDate(startDate) || !IsValidDate(endDate) || 
+            startDate[2] > endDate[2] || (startDate[1] > endDate[1] && startDate[2] == endDate[2]) ||
+            (startDate[0] >= endDate[0] && startDate[1] == endDate[1] && startDate[2] == endDate[2]))
+        {
+            wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                "The start or end date is invalid.\nPlease review and try again.", "",
+                wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
+
+            if (warningDialog->ShowModal())
+                return;
+        }
+
         meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(), _recurringDays);
     }
     else
     {
+        // Validate that the single date for the meeting is fully entered, and warn the user if not
+        int date[3];
+        for (int i = 0; i < 3; i++)
+        {
+            if (singleDateEntries[i]->GetLineLength(0) == 0)
+            {
+                wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                    "Please enter a date for this meeting.", "", wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
+
+                if (warningDialog->ShowModal())
+                    return;
+            }
+
+            date[i] = std::stoi(singleDateEntries[i]->GetValue().ToStdString());
+        }
+
+        // Also check that the date is a valid one, and warn the user if not
+        if (!IsValidDate(date))
+        {
+            wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                "The meeting date is invalid.\nPlease review and try again.", "",
+                wxICON_EXCLAMATION | wxOK, wxDefaultPosition);
+
+            if (warningDialog->ShowModal())
+                return;
+        }
+
         meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString());
     }
 
     //****************************************************************************************************************
     // To-do: Add meeting to database (this might not need an object made here, but it's proof of concept, at least) *
     //****************************************************************************************************************
+    delete(meetingTime);
     delete(meeting);
 
     Close(true);
@@ -392,6 +483,18 @@ void MV_Create::OnClosed(wxCloseEvent& event)
     }
 
     Destroy();
+}
+
+// Assuming MM/DD/YY format, because America, y'know?
+bool MV_Create::IsValidDate(int date[3])
+{
+    // I'm not going to worry right now about validating the date beyond these general number ranges.
+    // Are there a number of months with fewer days than 31? Yes, for sure. But this is close enough to
+    // avoid really weird inputs, at least. Also, make sure the date isn't in a past year, just because.
+    if (date[0] <= 12 && date[0] > 0 && date[1] <= 31 && date[1] > 0 && date[2] >= 21)
+        return true;
+    else
+        return false;
 }
 
 wxBEGIN_EVENT_TABLE(MV_Create, wxFrame)
