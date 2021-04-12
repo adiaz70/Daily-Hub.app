@@ -19,7 +19,7 @@ public:
 
 private:
     void OnOpenHome(wxCommandEvent& event);
-    void OnOpenCalViewHead(wxCommandEvent& event);
+    void OnOpenCalView_Head(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);

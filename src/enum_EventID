@@ -17,7 +17,8 @@ enum
     ID_OpenMVCreate = 5,
     ID_ToggleCheckBox = 6,
     ID_ToggleButton = 7,
-    ID_MainButton = 8
+    ID_MainButton = 8,
+    ID_OpenCalViewHead=9,
 };
 
 #endif

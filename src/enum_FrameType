@@ -12,7 +12,8 @@ enum FrameType
     TempHome = 1,
     MVHead = 2,
     CVHead = 3,
-    MVCreate = 4
+    MVCreate = 4,
+    CalView_Head=5
 };
 
 #endif
