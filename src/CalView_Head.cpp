@@ -24,7 +24,7 @@ CalView_Head::CalView_Head(const int id, const wxPoint& pos, const wxSize& size,
     SetMenuBar(menuBar);
 }
 //Establishing FrameType
-FrameType::CalView_Head::GetFrameType()
+FrameType CalView_Head::GetFrameType()
 {
     return FrameType::CalView_Head;
 }
