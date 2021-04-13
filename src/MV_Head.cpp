@@ -1,7 +1,7 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 3/20/21
+// Last edited on 4/12/21
 
 #include "MV_Head.h"
 
@@ -21,6 +21,7 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub*
 
     wxMenu *meetingMenu = new wxMenu;
     meetingMenu->Append(ID_OpenMVCreate, "&Create new meeting");
+    meetingMenu->Append(ID_OpenMVView, "&Open test meeting");
 
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(fileMenu, "&File");
@@ -40,6 +41,12 @@ FrameType MV_Head::GetFrameType()
 void MV_Head::OnOpenHome(wxCommandEvent& event)
 {
     hub->OpenUniqueFrame(FrameType::TempHome);
+}
+
+// MS: 4/12/21 - created function
+void MV_Head::OnOpenMeeting(wxCommandEvent& event)
+{
+    hub->OpenFrame(FrameType::MVView);
 }
 
 void MV_Head::OnCreate(wxCommandEvent& event)
@@ -70,6 +77,7 @@ void MV_Head::OnQuit(wxCommandEvent& event)
 
 wxBEGIN_EVENT_TABLE(MV_Head, wxFrame)
     EVT_MENU(ID_OpenTempHome, MV_Head::OnOpenHome)
+    EVT_MENU(ID_OpenMVView, MV_Head::OnOpenMeeting)
     EVT_MENU(ID_OpenMVCreate, MV_Head::OnCreate)
     EVT_MENU(ID_CloseFrame, MV_Head::OnExit)
     EVT_MENU(wxID_EXIT, MV_Head::OnQuit)

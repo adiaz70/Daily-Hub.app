@@ -1,6 +1,7 @@
 // enum_FrameType
 // MS: 3/14/21 - initial code
 // MS: 3/20/21 - added MVCreate
+// MS: 4/12/21 - added MVView
 
 #ifndef ENUM_FRAME_TYPE
 #define ENUM_FRAME_TYPE
@@ -13,7 +14,8 @@ enum FrameType
     MVHead = 2,
     CVHead = 3,
     MVCreate = 4,
-    CalView_Head=5
+    CalView_Head=5,
+    MVView = 6
 };
 
 #endif

@@ -1,31 +1,31 @@
-// MV_Head.h -- the 'head' (or primary frame) for the Meeting View
+// MV_View.h -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
-// Created on 3/14/21
+// Created on 4/12/21
 // Last edited on 4/12/21
 
-#ifndef MV_HEAD_H
-#define MV_HEAD_H
+#ifndef MV_VIEW_H
+#define MV_VIEW_H
 
 #include <wx/wx.h>
 #include "DailyHub.h"
 #include "HubFrame.h"
+#include "Meeting.h"
 #include "enum_FrameType"
 #include "enum_EventID"
 
-class MV_Head: public HubFrame
+class MV_View: public HubFrame
 {
 public:
-    MV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub);
+    MV_View(Meeting *_meeting, const int id, const wxPoint& pos, DailyHub *_hub);
     FrameType GetFrameType();
 
 private:
     void OnOpenHome(wxCommandEvent& event);
-    void OnOpenMeeting(wxCommandEvent& event);
-    void OnCreate(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);
-    DailyHub* hub;
+    DailyHub *hub;
+    Meeting *meeting;
 
     wxDECLARE_EVENT_TABLE();
 };
