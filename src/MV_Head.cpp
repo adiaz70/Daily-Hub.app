@@ -1,9 +1,10 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 4/12/21
+// Last edited on 4/15/21
 
 #include "MV_Head.h"
+#include "UserData.h"
 
 //***************************
 // Public member functions. *
@@ -22,6 +23,13 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub*
     wxMenu *meetingMenu = new wxMenu;
     meetingMenu->Append(ID_OpenMVCreate, "&Create new meeting");
     meetingMenu->Append(ID_OpenMVView, "&Open test meeting");
+
+    //******************************
+    // Testing code - remove later *
+    //******************************
+    meetingMenu->Append(wxID_YES, "&Reset database");
+    meetingMenu->Append(wxID_OK, "&Print database");
+    meetingMenu->Append(wxID_YESTOALL, "&Print contacts");
 
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(fileMenu, "&File");
@@ -75,11 +83,29 @@ void MV_Head::OnQuit(wxCommandEvent& event)
     hub->CloseAll();
 }
 
+void MV_Head::OnResetDatabase(wxCommandEvent& event)
+{
+    UserData::ResetDatabase(true);
+}
+
+void MV_Head::OnPrintDatabase(wxCommandEvent& event)
+{
+    UserData::GetMeetings(true);
+}
+
+void MV_Head::OnPrintContacts(wxCommandEvent& event)
+{
+    UserData::GetContacts(true);
+}
+
 wxBEGIN_EVENT_TABLE(MV_Head, wxFrame)
     EVT_MENU(ID_OpenTempHome, MV_Head::OnOpenHome)
     EVT_MENU(ID_OpenMVView, MV_Head::OnOpenMeeting)
     EVT_MENU(ID_OpenMVCreate, MV_Head::OnCreate)
     EVT_MENU(ID_CloseFrame, MV_Head::OnExit)
     EVT_MENU(wxID_EXIT, MV_Head::OnQuit)
+    EVT_MENU(wxID_YES, MV_Head::OnResetDatabase)
+    EVT_MENU(wxID_OK, MV_Head::OnPrintDatabase)
+    EVT_MENU(wxID_YESTOALL, MV_Head::OnPrintContacts)
     EVT_CLOSE(MV_Head::OnClosed)
 wxEND_EVENT_TABLE()

@@ -25,6 +25,9 @@ private:
     void OnExit(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);
+    void OnResetDatabase(wxCommandEvent& event);
+    void OnPrintDatabase(wxCommandEvent& event);
+    void OnPrintContacts(wxCommandEvent& event);
     DailyHub* hub;
 
     wxDECLARE_EVENT_TABLE();

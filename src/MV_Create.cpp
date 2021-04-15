@@ -12,6 +12,7 @@
 #include "MV_Create.h"
 #include "Meeting.h"
 #include "MeetingTime.h"
+#include "UserData.h"
 
 //***************************
 // Public member functions. *
