@@ -1,7 +1,7 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/11/21
+// Last edited on 4/18/21
 
 // Resources:
 // https://docs.wxwidgets.org/3.0/overview_sizer.html
@@ -305,7 +305,7 @@ void MV_Create::OnCreate(wxCommandEvent& event)
                 return;
         }
 
-        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(), _recurringDays);
+        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(), contactName->GetLabel().ToStdString(), _recurringDays);
     }
     else
     {
@@ -336,12 +336,10 @@ void MV_Create::OnCreate(wxCommandEvent& event)
                 return;
         }
 
-        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString());
+        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(), contactName->GetLabel().ToStdString());
     }
 
-    //****************************************************************************************************************
-    // To-do: Add meeting to database (this might not need an object made here, but it's proof of concept, at least) *
-    //****************************************************************************************************************
+    UserData::AddMeeting(meeting);
     delete(meetingTime);
     delete(meeting);
 

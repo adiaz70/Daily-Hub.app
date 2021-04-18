@@ -1,13 +1,13 @@
 // UserData.h
 // MS: 4/15/21 - initial code
-// MS: 4/18/21 - can now build objects after querying the database
+// MS: 4/18/21 - can now build objects after querying the database, and contacts are handled as strings rather than objects
 
 #ifndef USER_DATA_H
 #define USER_DATA_H
 
 #include <sqlite3.h>
+#include <string.h>
 #include <vector>
-#include "Contact.h"
 #include "Meeting.h"
 
 class UserData
@@ -15,7 +15,7 @@ class UserData
 public:
     // Getters
     static std::vector<Meeting*> GetMeetings(bool print = false);
-    static std::vector<Meeting*> GetMeetings(Contact *contact, bool print = false);
+    static std::vector<Meeting*> GetMeetings(std::string contact, bool print = false);
     static std::vector<std::string> GetContacts(bool print = false);
 
     // Setters

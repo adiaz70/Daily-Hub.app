@@ -1,9 +1,8 @@
 // UserData.h
 // MS: 4/15/21 - initial code
-// MS: 4/18/21 - can now build objects after querying the database
+// MS: 4/18/21 - can now build objects after querying the database, and contacts are handled as strings rather than objects
 
 #include "UserData.h"
-#include <string.h>
 #include <stdio.h>
 #include <iostream>
 
@@ -26,7 +25,7 @@ std::vector<Meeting*> UserData::GetMeetings(bool print)
         {
             std::cout << "Name: " << meetings[i]->GetName() << "\n";
             std::cout << "Link: " << meetings[i]->GetLink() << "\n";
-            std::cout << "Contacts are currently unsupported\n\n";
+            std::cout << "Contact: " << meetings[i]->GetContact() << "\n\n";
         }
     }
 
@@ -34,12 +33,12 @@ std::vector<Meeting*> UserData::GetMeetings(bool print)
     return meetings;
 }
 
-std::vector<Meeting*> UserData::GetMeetings(Contact *contact, bool print)
+std::vector<Meeting*> UserData::GetMeetings(std::string contact, bool print)
 {
     sqlite3 *database;
     OpenDatabase(&database);
     
-    std::string sql = "SELECT * FROM MEETINGS WHERE Contact = " + contact->GetNameString() + " ORDER BY Name;";
+    std::string sql = "SELECT * FROM MEETINGS WHERE Contact = " + contact + " ORDER BY Name;";
     std::vector<Meeting*> meetings;
 
     sqlite3_exec(database, sql.c_str(), MeetingCallback, (void*) &meetings, NULL);
@@ -51,7 +50,7 @@ std::vector<Meeting*> UserData::GetMeetings(Contact *contact, bool print)
         {
             std::cout << "Name: " << meetings[i]->GetName() << "\n";
             std::cout << "Link: " << meetings[i]->GetLink() << "\n";
-            std::cout << "Contacts are currently unsupported\n\n";
+            std::cout << "Contact: " << meetings[i]->GetContact() << "\n\n";
         }
     }
 
@@ -95,14 +94,8 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
         close = true;
     }
 
-    std::string contactString = "";
-    if (meeting->GetContact() != NULL)
-    {
-        contactString = meeting->GetContact()->GetNameString();
-    }
-
     std::string sql = "INSERT INTO MEETINGS (Name, Link, Contact) VALUES ('" + meeting->GetName() + "', " \
-                "'" + meeting->GetLink() + "', '" + contactString + "');";
+                "'" + meeting->GetLink() + "', '" + meeting->GetContact() + "');";
 
 
     sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
@@ -132,17 +125,16 @@ void UserData::CreateDatabase(bool populate)
 
     if (populate)
     {
-        Contact *contact = new Contact((std::string)"Joe");
+        std::string contact = "Joe";
         Meeting **meetings = (Meeting **) malloc(3 * sizeof(Meeting*));
         meetings[0] = new Meeting("Design Meeting", "www.thisisnotreal.com", contact);
-        meetings[1] = new Meeting("Class", "www.thisisveryimportant.edu");
+        meetings[1] = new Meeting("Class", "www.thisisveryimportant.edu", "");
         meetings[2] = new Meeting("Implementation Meeting", "www.thisissuperhelpful.org", contact);
         AddMeeting(meetings, 3);
         delete(meetings[0]);
         delete(meetings[1]);
         delete(meetings[2]);
         free(meetings);
-        delete(contact);
     }
 
     sqlite3_close(database);
@@ -181,7 +173,7 @@ int UserData::Callback(void *data, int argc, char **argv, char **azColName)
 int UserData::MeetingCallback(void *data, int argc, char **argv, char **azColName)
 {
     std::vector<Meeting*> *meetings = (std::vector<Meeting*> *) data;
-    meetings->push_back(new Meeting(argv[0] ? argv[0] : "", argv[1] ? argv[1] : ""));
+    meetings->push_back(new Meeting(argv[0] ? argv[0] : "", argv[1] ? argv[1] : "", argv[2] ? argv[2] : ""));
 
     // To-do: Need to incorporate contacts, but, how? Would have to do a lookup to find an already existing object,
     // or just start passing it around as a string... *sigh* That would probably be the 'easier' route.
