@@ -67,7 +67,7 @@ std::vector<std::string> UserData::GetContacts(bool print)
     OpenDatabase(&database);
 
     std::vector<std::string> contacts;
-    sqlite3_exec(database, "SELECT DISTINCT Contact FROM MEETINGS ORDER BY Contact;", ContactCallback, &contacts, NULL);
+    sqlite3_exec(database, "SELECT * FROM CONTACTS ORDER BY Name;", ContactCallback, &contacts, NULL);
 
     // Check if the first element in the vector is blank because a meeting exists with no assigned contact.
     // If so, remove it
@@ -96,8 +96,6 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
 
     std::string sql = "INSERT INTO MEETINGS (Name, Link, Contact) VALUES ('" + meeting->GetName() + "', " \
                 "'" + meeting->GetLink() + "', '" + meeting->GetContact() + "');";
-
-
     sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
 
     if (close)
@@ -117,6 +115,15 @@ void UserData::AddMeeting(Meeting **meetings, int num)
     sqlite3_close(database);
 }
 
+void UserData::AddContact(std::string contact)
+{
+    sqlite3 *database;
+    OpenDatabase(&database);
+    std::string sql = "INSERT INTO CONTACTS (Name) VALUES ('" + contact + "');";
+    sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
+    sqlite3_close(database);
+}
+
 void UserData::CreateDatabase(bool populate)
 {
     sqlite3 *database;
@@ -125,7 +132,10 @@ void UserData::CreateDatabase(bool populate)
 
     if (populate)
     {
-        std::string contact = "Joe";
+        std::string contact = "Alice";
+        AddContact(contact);
+        AddContact("Bob");
+
         Meeting **meetings = (Meeting **) malloc(3 * sizeof(Meeting*));
         meetings[0] = new Meeting("Design Meeting", "www.thisisnotreal.com", contact);
         meetings[1] = new Meeting("Class", "www.thisisveryimportant.edu", "");
@@ -145,6 +155,7 @@ void UserData::ResetDatabase(bool populate)
     sqlite3 *database;
     OpenDatabase(&database);
     sqlite3_exec(database, "DROP TABLE MEETINGS", Callback, NULL, NULL);
+    sqlite3_exec(database, "DROP TABLE CONTACTS", Callback, NULL, NULL);
     CreateDatabase(populate);
     sqlite3_close(database);
 }
@@ -193,6 +204,7 @@ int UserData::ContactCallback(void *data, int argc, char **argv, char **azColNam
 void UserData::CreateDatabase(sqlite3 *database)
 {
     sqlite3_exec(database, "CREATE TABLE MEETINGS (Name TEXT PRIMARY KEY, Link TEXT, Contact TEXT);", Callback, NULL, NULL);
+    sqlite3_exec(database, "CREATE TABLE CONTACTS (Name TEXT PRIMARY KEY);", Callback, NULL, NULL);
 }
 
 // This is abstracted away so that any error-handling or specifics of finding the right filepath to the database

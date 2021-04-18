@@ -13,6 +13,7 @@
 #include "Meeting.h"
 #include "MeetingTime.h"
 #include "UserData.h"
+#include <vector>
 
 //***************************
 // Public member functions. *
@@ -305,7 +306,8 @@ void MV_Create::OnCreate(wxCommandEvent& event)
                 return;
         }
 
-        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(), contactName->GetLabel().ToStdString(), _recurringDays);
+        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(),
+                              contactName->GetLabel().ToStdString() != "none" ? contactName->GetLabel().ToStdString() : "", _recurringDays);
     }
     else
     {
@@ -336,7 +338,8 @@ void MV_Create::OnCreate(wxCommandEvent& event)
                 return;
         }
 
-        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(), contactName->GetLabel().ToStdString());
+        meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(),
+                              contactName->GetLabel().ToStdString() != "none" ? contactName->GetLabel().ToStdString() : "");
     }
 
     UserData::AddMeeting(meeting);
@@ -348,40 +351,36 @@ void MV_Create::OnCreate(wxCommandEvent& event)
 
 void MV_Create::OnChooseContact(wxCommandEvent& event)
 {
-    // Rather than being created here, the next line should call the user data class to be given the list of contacts
-    // and then simply add the "New Contact" and "No Contact" options at the beginning.
-    wxString contacts[5] = { wxString("New Contact"), wxString("No Contact"), wxString("Person A"), wxString("Person B"), wxString("Person C") };
+    std::vector<std::string> contactStrings = UserData::GetContacts();
+    wxString contacts[contactStrings.size() + 2];
+    contacts[0] = wxString("No Contact");
+    contacts[1] = wxString("New Contact");
+    for (int i = 0; i < contactStrings.size(); i++)
+    {
+        contacts[i + 2] = wxString(contactStrings[i]);
+    }
 
-    wxSingleChoiceDialog *contactDialog = new wxSingleChoiceDialog(this, "Select the contact", "", 5, contacts);
+    wxSingleChoiceDialog *contactDialog = new wxSingleChoiceDialog(this, "Select the contact", "", contactStrings.size() + 2, contacts);
     if (contactDialog->ShowModal() == wxID_OK)
     {
-        if (contactDialog->GetSelection() == 0)
+        if (contactDialog->GetSelection() == 1)
         {
             // Time for dialogs within dialogs! Ask the user to enter the name of the new contact.
             wxTextEntryDialog *newContactDialog = new wxTextEntryDialog(this, "Enter the name of the new contact.", "");
             newContactDialog->SetMaxLength(30);
             if (newContactDialog->ShowModal() == wxID_OK)
             {
-                //**************************************************
-                // To-do: This should create a new contact object. *
-                //**************************************************
-                contactName->SetLabel(newContactDialog->GetValue());
+                if (newContactDialog->GetValue().ToStdString() != "none")
+                {
+                    UserData::AddContact(newContactDialog->GetValue().ToStdString());
+                    contactName->SetLabel(newContactDialog->GetValue());
+                }
             }
         }
-        else if (contactDialog->GetSelection() == 1)
-        {
-            //********************************************************************
-            // To-do: This should remove the contact object from various things. *
-            //********************************************************************
+        else if (contactDialog->GetSelection() == 0)
             contactName->SetLabel("none");
-        }
         else
-        {
-            //************************************************************************
-            // To-do: This should assign an actual contact object to various things. *
-            //************************************************************************
             contactName->SetLabel(contacts[contactDialog->GetSelection()]);
-        }
     }
 
     // Fix the layout of the sizers to adapt to the shown/hidden list of checkboxes (must be called after every adjustment)

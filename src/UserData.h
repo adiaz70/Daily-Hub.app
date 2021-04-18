@@ -21,6 +21,7 @@ public:
     // Setters
     static void AddMeeting(Meeting *meeting, sqlite3 *database = nullptr);
     static void AddMeeting(Meeting **meetings, int num);
+    static void AddContact(std::string contact);
 
     // Database stuff
     static void CreateDatabase(bool populate = false);
