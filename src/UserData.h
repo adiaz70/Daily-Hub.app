@@ -1,10 +1,12 @@
 // UserData.h
 // MS: 4/15/21 - initial code
+// MS: 4/18/21 - can now build objects after querying the database
 
 #ifndef USER_DATA_H
 #define USER_DATA_H
 
 #include <sqlite3.h>
+#include <vector>
 #include "Contact.h"
 #include "Meeting.h"
 
@@ -12,9 +14,9 @@ class UserData
 {
 public:
     // Getters
-    static void GetMeetings(bool print = false);
-    static void GetMeetings(Contact *contact, bool print = false);
-    static void GetContacts(bool print = false);
+    static std::vector<Meeting*> GetMeetings(bool print = false);
+    static std::vector<Meeting*> GetMeetings(Contact *contact, bool print = false);
+    static std::vector<std::string> GetContacts(bool print = false);
 
     // Setters
     static void AddMeeting(Meeting *meeting, sqlite3 *database = nullptr);
@@ -27,6 +29,8 @@ public:
 private:
     UserData(){}
     static int Callback(void *data, int argc, char **argv, char **azColName);
+    static int MeetingCallback(void *data, int argc, char **argv, char **azColName);
+    static int ContactCallback(void *data, int argc, char **argv, char **azColName);
     static void CreateDatabase(sqlite3 *database);
     static void OpenDatabase(sqlite3 **database);
 };

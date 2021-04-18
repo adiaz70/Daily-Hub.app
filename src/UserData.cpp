@@ -1,42 +1,89 @@
 // UserData.h
 // MS: 4/15/21 - initial code
+// MS: 4/18/21 - can now build objects after querying the database
 
 #include "UserData.h"
 #include <string.h>
 #include <stdio.h>
+#include <iostream>
 
 //***************************
 // Public member functions. *
 //***************************
 
-void UserData::GetMeetings(bool print)
+std::vector<Meeting*> UserData::GetMeetings(bool print)
 {
     sqlite3 *database;
     OpenDatabase(&database);
-    sqlite3_exec(database, "SELECT * FROM MEETINGS ORDER BY Name", Callback, print ? (void*)"print" : NULL, NULL);
+
+    std::vector<Meeting*> meetings;
+    sqlite3_exec(database, "SELECT * FROM MEETINGS ORDER BY Name", MeetingCallback, (void*) &meetings, NULL);
+
+    if (print)
+    {
+        std::cout << "Found " << meetings.size() << " meetings.\n\n";
+        for (int i = 0; i < meetings.size(); i++)
+        {
+            std::cout << "Name: " << meetings[i]->GetName() << "\n";
+            std::cout << "Link: " << meetings[i]->GetLink() << "\n";
+            std::cout << "Contacts are currently unsupported\n\n";
+        }
+    }
+
     sqlite3_close(database);
+    return meetings;
 }
 
-void UserData::GetMeetings(Contact *contact, bool print)
+std::vector<Meeting*> UserData::GetMeetings(Contact *contact, bool print)
 {
     sqlite3 *database;
     OpenDatabase(&database);
     
     std::string sql = "SELECT * FROM MEETINGS WHERE Contact = " + contact->GetNameString() + " ORDER BY Name;";
-    sqlite3_exec(database, sql.c_str(), Callback, print ? (void*)"print" : NULL, NULL);
+    std::vector<Meeting*> meetings;
+
+    sqlite3_exec(database, sql.c_str(), MeetingCallback, (void*) &meetings, NULL);
+
+    if (print)
+    {
+        std::cout << "Found " << meetings.size() << " meetings.\n\n";
+        for (int i = 0; i < meetings.size(); i++)
+        {
+            std::cout << "Name: " << meetings[i]->GetName() << "\n";
+            std::cout << "Link: " << meetings[i]->GetLink() << "\n";
+            std::cout << "Contacts are currently unsupported\n\n";
+        }
+    }
 
     // Now create and return Meeting objects from the returned data... or do I want to create them all at the start
     // and then do a lookup? Probably not.
 
     sqlite3_close(database);
+    return meetings;
 }
 
-void UserData::GetContacts(bool print)
+std::vector<std::string> UserData::GetContacts(bool print)
 {
     sqlite3 *database;
     OpenDatabase(&database);
-    sqlite3_exec(database, "SELECT DISTINCT Contact FROM MEETINGS ORDER BY Contact;", Callback, print ? (void*)"print" : NULL, NULL);
+
+    std::vector<std::string> contacts;
+    sqlite3_exec(database, "SELECT DISTINCT Contact FROM MEETINGS ORDER BY Contact;", ContactCallback, &contacts, NULL);
+
+    // Check if the first element in the vector is blank because a meeting exists with no assigned contact.
+    // If so, remove it
+    if (contacts.size() > 0 && contacts[0] == "")
+        contacts.erase(contacts.begin());
+
+    if (print)
+    {
+        std::cout << "Found " << contacts.size() << " contacts.\n\n";
+        for (int i = 0; i < contacts.size(); i++)
+            std::cout << "Contact Name: " << contacts[i] << "\n\n";
+    }
+    
     sqlite3_close(database);
+    return contacts;
 }
 
 void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
@@ -127,7 +174,26 @@ int UserData::Callback(void *data, int argc, char **argv, char **azColName)
         printf("\n");
     }
 
-    // Next, load the arguments into 'data' (still as character arrays) so that it can be returned and used however desired
+    return 0;
+}
+
+// This function expects 'data' to be a pointer to vector of Meeting objects
+int UserData::MeetingCallback(void *data, int argc, char **argv, char **azColName)
+{
+    std::vector<Meeting*> *meetings = (std::vector<Meeting*> *) data;
+    meetings->push_back(new Meeting(argv[0] ? argv[0] : "", argv[1] ? argv[1] : ""));
+
+    // To-do: Need to incorporate contacts, but, how? Would have to do a lookup to find an already existing object,
+    // or just start passing it around as a string... *sigh* That would probably be the 'easier' route.
+
+    return 0;
+}
+
+// This function expects 'data' to be a pointer to vector of strings
+int UserData::ContactCallback(void *data, int argc, char **argv, char **azColName)
+{
+    std::vector<std::string> *contacts = (std::vector<std::string> *) data;
+    contacts->push_back(argv[0]);
 
     return 0;
 }
