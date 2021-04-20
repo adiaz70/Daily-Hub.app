@@ -16,7 +16,7 @@ public:
     //virtual int OnExit();
 
     void OpenUniqueFrame(FrameType id); // Opens a new instance of a frame if one does not already exist
-    void OpenFrame(FrameType id); // Opens a new instance of a frame regardless of whether one already exists
+    void OpenFrame(FrameType id, void *data = nullptr); // Opens a new instance of a frame regardless of whether one already exists
     void ForgetFrame(HubFrame* _frame);
     void CloseAll();
 

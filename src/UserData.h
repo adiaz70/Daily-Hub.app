@@ -33,7 +33,7 @@ private:
     static int MeetingCallback(void *data, int argc, char **argv, char **azColName);
     static int ContactCallback(void *data, int argc, char **argv, char **azColName);
     static void CreateDatabase(sqlite3 *database);
-    static void OpenDatabase(sqlite3 **database);
+    static void OpenDatabase(sqlite3 **database, std::string name = "user_data.db");
 };
 
 #endif

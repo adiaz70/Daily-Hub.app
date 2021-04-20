@@ -1,7 +1,7 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/18/21
+// Last edited on 4/20/21
 
 // Resources:
 // https://docs.wxwidgets.org/3.0/overview_sizer.html
@@ -295,8 +295,8 @@ void MV_Create::OnCreate(wxCommandEvent& event)
 
         // Check that both of these dates are valid and occur in the proper order
         if (!IsValidDate(startDate) || !IsValidDate(endDate) || 
-            startDate[2] > endDate[2] || (startDate[1] > endDate[1] && startDate[2] == endDate[2]) ||
-            (startDate[0] >= endDate[0] && startDate[1] == endDate[1] && startDate[2] == endDate[2]))
+            startDate[2] > endDate[2] || (startDate[0] > endDate[0] && startDate[2] == endDate[2]) ||
+            (startDate[1] >= endDate[1] && startDate[0] == endDate[0] && startDate[2] == endDate[2]))
         {
             wxMessageDialog *warningDialog = new wxMessageDialog(this,
                 "The start or end date is invalid.\nPlease review and try again.", "",
@@ -307,7 +307,8 @@ void MV_Create::OnCreate(wxCommandEvent& event)
         }
 
         meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(),
-                              contactName->GetLabel().ToStdString() != "none" ? contactName->GetLabel().ToStdString() : "", _recurringDays);
+                              contactName->GetLabel().ToStdString() != "none" ? contactName->GetLabel().ToStdString() : "",
+                              meetingTime, startDate, endDate, _recurringDays);
     }
     else
     {
@@ -339,11 +340,12 @@ void MV_Create::OnCreate(wxCommandEvent& event)
         }
 
         meeting = new Meeting(nameTxt->GetValue().ToStdString(), linkTxt->GetValue().ToStdString(),
-                              contactName->GetLabel().ToStdString() != "none" ? contactName->GetLabel().ToStdString() : "");
+                              contactName->GetLabel().ToStdString() != "none" ? contactName->GetLabel().ToStdString() : "", 
+                              meetingTime, date);
     }
 
     UserData::AddMeeting(meeting);
-    delete(meetingTime);
+    //delete(meetingTime); // (this should be covered in the meeting destructor)
     delete(meeting);
 
     Close(true);

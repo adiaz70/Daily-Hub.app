@@ -1,10 +1,11 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 4/15/21
+// Last edited on 4/20/21
 
 #include "MV_Head.h"
 #include "UserData.h"
+#include <vector>
 
 //***************************
 // Public member functions. *
@@ -22,7 +23,7 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub*
 
     wxMenu *meetingMenu = new wxMenu;
     meetingMenu->Append(ID_OpenMVCreate, "&Create new meeting");
-    meetingMenu->Append(ID_OpenMVView, "&Open test meeting");
+    meetingMenu->Append(ID_OpenMVView, "&Open random meeting");
 
     //******************************
     // Testing code - remove later *
@@ -51,10 +52,15 @@ void MV_Head::OnOpenHome(wxCommandEvent& event)
     hub->OpenUniqueFrame(FrameType::TempHome);
 }
 
-// MS: 4/12/21 - created function
 void MV_Head::OnOpenMeeting(wxCommandEvent& event)
 {
-    hub->OpenFrame(FrameType::MVView);
+    std::vector<Meeting *> meetings = UserData::GetMeetings();
+    hub->OpenFrame(FrameType::MVView, (void *) meetings[rand() % meetings.size()]);
+    
+    for (int i = 0; i < meetings.size(); i++)
+    {
+        delete(meetings[i]);
+    }
 }
 
 void MV_Head::OnCreate(wxCommandEvent& event)
@@ -90,7 +96,13 @@ void MV_Head::OnResetDatabase(wxCommandEvent& event)
 
 void MV_Head::OnPrintDatabase(wxCommandEvent& event)
 {
-    UserData::GetMeetings(true);
+    // Calling UserData::GetMeetings(true) will print every meeting in the database, but it also creates a bunch of objects in memory
+    std::vector<Meeting *> meetings = UserData::GetMeetings(true);
+    // So, go through and delete them all
+    for (int i = 0; i < meetings.size(); i++)
+    {
+        delete(meetings[i]);
+    }
 }
 
 void MV_Head::OnPrintContacts(wxCommandEvent& event)

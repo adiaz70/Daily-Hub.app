@@ -46,7 +46,8 @@ void DailyHub::OpenUniqueFrame(FrameType id)
     OpenFrame(id);
 }
 
-void DailyHub::OpenFrame(FrameType id)
+// MS: 4/20/21 - added void* parameter so that frames that need additional information to open can receive it
+void DailyHub::OpenFrame(FrameType id, void *data)
 {
     switch (id)
     {
@@ -54,7 +55,7 @@ void DailyHub::OpenFrame(FrameType id)
         case FrameType::MVHead: frames.push_back(new MV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
         case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(460, 405), this)); break;
         case FrameType::CVHead: frames.push_back(new CV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
-        case FrameType::MVView: frames.push_back(new MV_View(new Meeting("Your Destiny", "https://docs.wxwidgets.org/3.0/", "The Universe"), NewFrameID(), wxPoint(50, 50), this)); break;
+        case FrameType::MVView: frames.push_back(new MV_View((Meeting *) data, NewFrameID(), wxPoint(50, 50), this)); break;
         default: return;
     }
 
