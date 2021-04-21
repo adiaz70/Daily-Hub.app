@@ -3,6 +3,7 @@
 // MS: 4/2/21 - added Contact object
 // MS: 4/18/21 - reworked contacts to be strings because the object route wasn't actually helping and added support for date and time
 // MS: 4/20/21 - added getters for the rest of the code to be able to access the meeting information
+// MS: 4/21/21 - added support for tracking the ID given to each meeting by the database, separate from when the meeting is created
 
 #ifndef MEETING_H
 #define MEETING_H
@@ -54,7 +55,11 @@ public:
     bool IsRecurring() { return recurring; }
     bool * GetRecurringDays() { return recurringDays; }
 
+    void SetID(int _id) { id = _id; }
+    int GetID() { return id; }
+
 private:
+    MeetingTime *meetingTime;
     std::string name;
     std::string link;
     std::string contact;
@@ -62,7 +67,7 @@ private:
     bool recurringDays[7];
     int firstDate[3];
     int secondDate[3];
-    MeetingTime *meetingTime;
+    int id = -1;
 };
 
 #endif

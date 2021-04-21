@@ -1,10 +1,11 @@
 // MV_View.cpp -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 4/20/21
+// Last edited on 4/21/21
 
 #include "MV_View.h"
 #include "wx/hyperlink.h"
+#include "UserData.h"
 
 //***************************
 // Public member functions. *
@@ -14,7 +15,12 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
         : HubFrame(wxString(meeting->GetName()), id, pos, wxDefaultSize)
 {
     hub = _hub;
-    name = meeting->GetName();
+    meetingID = meeting->GetID();
+    if (meetingID == -1)
+    {
+        Close(true);
+        return;
+    }
 
     wxMenu *fileMenu = new wxMenu;
     fileMenu->Append(ID_OpenTempHome, "&Open Home");
@@ -34,8 +40,8 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
                    wxSizerFlags(0).Center().Border(wxLEFT, 5));
     topSizer->Add(linkSizer, wxSizerFlags(0).Center().Border(wxUP, 15));
 
-    topSizer->Add(new wxTextCtrl(this, 0, "", wxDefaultPosition, wxSize(150, 150), wxTE_MULTILINE),
-                  wxSizerFlags(1).Border(wxALL, 15).Expand());
+    notes = new wxTextCtrl(this, 0, UserData::GetNotes(meetingID), wxDefaultPosition, wxSize(150, 150), wxTE_MULTILINE);
+    topSizer->Add(notes, wxSizerFlags(1).Border(wxALL, 15).Expand());
 
     SetSizerAndFit(topSizer);
 }
@@ -64,6 +70,9 @@ void MV_View::OnExit(wxCommandEvent& event)
 // (such as pressing X on the window)
 void MV_View::OnClosed(wxCloseEvent& event)
 {
+    // Save the notes taken in the database
+    UserData::SaveNotes(meetingID, notes->GetValue().ToStdString());
+
     // Make sure the app has forgotten this frame before destroying it
     if (!forgotten)
         hub->ForgetFrame(this);

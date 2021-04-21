@@ -1,7 +1,7 @@
 // MV_View.h -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 4/20/21
+// Last edited on 4/21/21
 
 #ifndef MV_VIEW_H
 #define MV_VIEW_H
@@ -26,7 +26,8 @@ private:
     void OnClosed(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);
     DailyHub *hub;
-    std::string name;
+    int meetingID;
+    wxTextCtrl *notes;
 
     wxDECLARE_EVENT_TABLE();
 };

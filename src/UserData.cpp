@@ -3,6 +3,7 @@
 // MS: 4/18/21 - can now build objects after querying the database, and contacts are handled as strings rather than objects
 // MS: 4/20/21 - the database now accepts lots more information on meetings so that they can be fully reconstructed
 // MS: 4/21/21 - changed MEETINGS table primary key so that there can be matching names but unique IDs
+// MS: 4/21/21 - added NOTES table to database from which user-written notes can be read and saved to
 
 #include "UserData.h"
 #include "MeetingTime.h"
@@ -13,6 +14,10 @@
 //***************************
 // Public member functions. *
 //***************************
+
+//**********
+// Getters *
+//**********
 
 std::vector<Meeting*> UserData::GetMeetings(bool print)
 {
@@ -101,6 +106,24 @@ std::vector<std::string> UserData::GetContacts(bool print)
     return contacts;
 }
 
+std::string UserData::GetNotes(int meetingID)
+{
+    sqlite3 *database;
+    OpenDatabase(&database);
+
+    std::string sql = "SELECT ID, Notes FROM NOTES WHERE ID = " + std::to_string(meetingID) + ";";
+    std::string notes;
+    sqlite3_exec(database, sql.c_str(), NotesCallback, &notes, NULL);
+
+    sqlite3_close(database);
+
+    return notes;
+}
+
+//**********
+// Setters *
+//**********
+
 void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
 {
     bool close = false;
@@ -119,16 +142,20 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
                                             "SecondMonth, SecondDay, SecondYear, " \
                                             "Mon, Tue, Wed, Thur, Fri, Sat, Sun) ";
 
+    // Calculate a unique ID to be assigned to this meeting and concatenate it to the SQLite command
     int maxID;
     sqlite3_exec(database, "SELECT MAX(ID) FROM MEETINGS;", IDCallback, (void*) &maxID, NULL);
     sql += "VALUES (" + std::to_string(maxID + 1);
 
+    // Concatenate the meeting name, link, and contact
     sql += ", '" + meeting->GetName() + "', '" + meeting->GetLink() + "', '" + meeting->GetContact() + "'";
     
+    // Concatenate the meeting's start and end times
     int *times = meeting->GetMeetingTime()->GetTimes();
     sql += ", " + std::to_string(times[0]) + ", " + std::to_string(times[1]) + ", " + std::to_string(meeting->GetMeetingTime()->IsStartAM());
     sql += ", " + std::to_string(times[2]) + ", " + std::to_string(times[3]) + ", " + std::to_string(meeting->GetMeetingTime()->IsEndAM());
 
+    // Concatenate all of the information about whether the meeting recurs between two dates or occurs only once
     sql += ", " + std::to_string(meeting->IsRecurring());
     int *firstDate = meeting->GetFirstDate();
     sql += ", " + std::to_string(firstDate[0]) + ", " + std::to_string(firstDate[1]) + ", " + std::to_string(firstDate[2]);
@@ -140,13 +167,22 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
     else
         sql += ", -1, -1, -1";
 
+    // Concatenate the exact days of the week on which the meeting is set to recur
     for (int i = 0; i < 7; i++)
     {
         sql += ", " + std::to_string(meeting->GetRecurringDays()[i]);
     }
     sql += ");";
 
-    sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
+    // Execute the command to add this meeting to the database
+    int result = sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
+
+    // If the command executed successfully, insert a corresponding string into the NOTES table for later use
+    if (result == 0)
+    {
+        sql = "INSERT INTO NOTES (ID, Notes) VALUES (" + std::to_string(maxID + 1) + ", '');";
+        sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
+    }
 
     if (close)
         sqlite3_close(database);
@@ -173,6 +209,19 @@ void UserData::AddContact(std::string contact)
     sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
     sqlite3_close(database);
 }
+
+void UserData::SaveNotes(int meetingID, std::string notes)
+{
+    sqlite3 *database;
+    OpenDatabase(&database);
+    std::string sql = "UPDATE NOTES SET Notes = '" + notes + "' WHERE ID = " + std::to_string(meetingID) + ";";
+    sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
+    sqlite3_close(database);
+}
+
+//**********************
+// Database operations *
+//**********************
 
 void UserData::CreateDatabase(bool populate)
 {
@@ -211,6 +260,7 @@ void UserData::ResetDatabase(bool populate)
     OpenDatabase(&database);
     sqlite3_exec(database, "DROP TABLE MEETINGS", Callback, NULL, NULL);
     sqlite3_exec(database, "DROP TABLE CONTACTS", Callback, NULL, NULL);
+    sqlite3_exec(database, "DROP TABLE NOTES", Callback, NULL, NULL);
     CreateDatabase(populate);
     sqlite3_close(database);
 }
@@ -292,6 +342,9 @@ int UserData::MeetingCallback(void *data, int argc, char **argv, char **colName)
         meeting = new Meeting(argv[1], argv[2], argv[3], meetingTime, firstDate);
     }
 
+    // Make sure to assign the database ID to this newly created meeting
+    meeting->SetID(std::stoi(argv[0]));
+
     std::vector<Meeting*> *meetings = (std::vector<Meeting*> *) data;
     meetings->push_back(meeting);
 
@@ -312,6 +365,15 @@ int UserData::IDCallback(void *data, int argc, char **argv, char **colName)
 {
     int *id = (int *) data;
     *id = argv[0] ? std::stoi(argv[0]) : -1;
+
+    return 0;
+}
+
+// This function expects 'data' to be a pointer to a string
+int UserData::NotesCallback(void *data, int argc, char **argv, char **colName)
+{
+    std::string *notes = (std::string *) data;
+    *notes = argv[1] ? argv[1] : "";
 
     return 0;
 }
@@ -344,6 +406,8 @@ void UserData::CreateDatabase(sqlite3 *database)
                                                   "Sun INTEGER);", Callback, NULL, NULL);
     
     sqlite3_exec(database, "CREATE TABLE CONTACTS (Name TEXT PRIMARY KEY);", Callback, NULL, NULL);
+
+    sqlite3_exec(database, "CREATE TABLE NOTES (ID INTEGER PRIMARY KEY, Notes TEXT);", Callback, NULL, NULL);
 }
 
 // This is abstracted away so that any error-handling or specifics of finding the right filepath to the database
