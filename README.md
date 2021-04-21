@@ -32,7 +32,7 @@ Extract the contents somewhere on the computer, such as the desktop, and open th
 ```
 ./configure --prefix=/usr/local
 make
-make install
+sudo make install
 ```
 
 ## Compilation and Linker Flags for Prerequisites

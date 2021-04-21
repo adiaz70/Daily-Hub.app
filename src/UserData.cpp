@@ -2,6 +2,7 @@
 // MS: 4/15/21 - initial code
 // MS: 4/18/21 - can now build objects after querying the database, and contacts are handled as strings rather than objects
 // MS: 4/20/21 - the database now accepts lots more information on meetings so that they can be fully reconstructed
+// MS: 4/21/21 - changed MEETINGS table primary key so that there can be matching names but unique IDs
 
 #include "UserData.h"
 #include "MeetingTime.h"
@@ -82,7 +83,7 @@ std::vector<std::string> UserData::GetContacts(bool print)
     OpenDatabase(&database);
 
     std::vector<std::string> contacts;
-    sqlite3_exec(database, "SELECT * FROM CONTACTS ORDER BY Name;", ContactCallback, &contacts, NULL);
+    sqlite3_exec(database, "SELECT * FROM CONTACTS ORDER BY Name;", ContactCallback, (void*) &contacts, NULL);
 
     // Check if the first element in the vector is blank because a meeting exists with no assigned contact.
     // If so, remove it
@@ -109,14 +110,20 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
         close = true;
     }
     
-    std::string sql = "INSERT INTO MEETINGS (Name, Link, Contact, " \
+    std::string sql = "INSERT INTO MEETINGS (ID, " \
+                                            "Name, Link, Contact, " \
                                             "StartHour, StartMinute, IsStartAM, " \
                                             "EndHour, EndMinute, IsEndAM, " \
                                             "IsRecurring, " \
                                             "FirstMonth, FirstDay, FirstYear, " \
                                             "SecondMonth, SecondDay, SecondYear, " \
                                             "Mon, Tue, Wed, Thur, Fri, Sat, Sun) ";
-    sql += "VALUES ('" + meeting->GetName() + "', '" + meeting->GetLink() + "', '" + meeting->GetContact() + "'";
+
+    int maxID;
+    sqlite3_exec(database, "SELECT MAX(ID) FROM MEETINGS;", IDCallback, (void*) &maxID, NULL);
+    sql += "VALUES (" + std::to_string(maxID + 1);
+
+    sql += ", '" + meeting->GetName() + "', '" + meeting->GetLink() + "', '" + meeting->GetContact() + "'";
     
     int *times = meeting->GetMeetingTime()->GetTimes();
     sql += ", " + std::to_string(times[0]) + ", " + std::to_string(times[1]) + ", " + std::to_string(meeting->GetMeetingTime()->IsStartAM());
@@ -215,13 +222,13 @@ void UserData::ResetDatabase(bool populate)
 // References:
 // https://www.sqlite.org/c3ref/exec.html
 // https://www.tutorialspoint.com/sqlite/sqlite_c_cpp.htm
-int UserData::Callback(void *data, int argc, char **argv, char **azColName)
+int UserData::Callback(void *data, int argc, char **argv, char **colName)
 {
     // If this is supposed to be output to the terminal, then do so
     if (data != NULL && (char*)data == "print")
     {
         for (int i = 0; i < argc; i++)
-            printf("%s: %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+            printf("%s: %s\n", colName[i], argv[i] ? argv[i] : "NULL");
         printf("\n");
     }
 
@@ -229,59 +236,60 @@ int UserData::Callback(void *data, int argc, char **argv, char **azColName)
 }
 
 // This function expects 'data' to be a pointer to vector of Meeting objects
-int UserData::MeetingCallback(void *data, int argc, char **argv, char **azColName)
+int UserData::MeetingCallback(void *data, int argc, char **argv, char **colName)
 {
-    /*  (Name TEXT PRIMARY KEY, " \           0
-        "Link TEXT," \                        1
-        "Contact TEXT," \                     2
-        "StartHour INTEGER," \                3  
-        "StartMinute INTEGER," \              4
-        "IsStartAM INTEGER," \                5
-        "EndHour INTEGER," \                  6
-        "EndMinute INTEGER," \                7
-        "IsEndAM INTEGER," \                  8
-        "IsRecurring INTEGER," \              9
-        "FirstMonth INTEGER," \               10
-        "FirstDay INTEGER," \                 11 
-        "FirstYear INTEGER," \                12  
-        "SecondMonth INTEGER," \              13
-        "SecondDay INTEGER," \                14
-        "SecondYear INTEGER," \               15
-        "Mon INTEGER," \                      16
-        "Tue INTEGER," \                      17
-        "Wed INTEGER," \                      18
-        "Thur INTEGER," \                     19
-        "Fri INTEGER," \                      20
-        "Sat INTEGER," \                      21
-        "Sun INTEGER)                         22*/
+    /*  (ID INTEGER PRIMARY KEY," \           0
+        "Name TEXT, " \                       1
+        "Link TEXT," \                        2
+        "Contact TEXT," \                     3
+        "StartHour INTEGER," \                4  
+        "StartMinute INTEGER," \              5
+        "IsStartAM INTEGER," \                6
+        "EndHour INTEGER," \                  7
+        "EndMinute INTEGER," \                8
+        "IsEndAM INTEGER," \                  9
+        "IsRecurring INTEGER," \              10
+        "FirstMonth INTEGER," \               11
+        "FirstDay INTEGER," \                 12 
+        "FirstYear INTEGER," \                13  
+        "SecondMonth INTEGER," \              14
+        "SecondDay INTEGER," \                15
+        "SecondYear INTEGER," \               16
+        "Mon INTEGER," \                      17
+        "Tue INTEGER," \                      18
+        "Wed INTEGER," \                      19
+        "Thur INTEGER," \                     20
+        "Fri INTEGER," \                      21
+        "Sat INTEGER," \                      22
+        "Sun INTEGER)                         23*/
     
-    if (argc < 23)
+    if (argc < 24)
     {
         std::cout << "Invalid number of arguments in MeetingCallback\n";
         return 0;
     }
 
     Meeting *meeting;
-    int times[4] = { std::stoi(argv[3]), std::stoi(argv[4]), std::stoi(argv[6]), std::stoi(argv[7]) };
-    MeetingTime *meetingTime = new MeetingTime(times, std::stoi(argv[5]), std::stoi(argv[8]));
-    int firstDate[3] = { std::stoi(argv[10]), std::stoi(argv[11]), std::stoi(argv[12]) };
+    int times[4] = { std::stoi(argv[4]), std::stoi(argv[5]), std::stoi(argv[7]), std::stoi(argv[8]) };
+    MeetingTime *meetingTime = new MeetingTime(times, std::stoi(argv[6]), std::stoi(argv[9]));
+    int firstDate[3] = { std::stoi(argv[11]), std::stoi(argv[12]), std::stoi(argv[13]) };
 
     // If this is a recurring meeting
-    if (std::stoi(argv[9]) == 1)
+    if (std::stoi(argv[10]) == 1)
     {
-        int secondDate[3] = { std::stoi(argv[13]), std::stoi(argv[14]), std::stoi(argv[15]) };
+        int secondDate[3] = { std::stoi(argv[14]), std::stoi(argv[15]), std::stoi(argv[16]) };
 
         bool days[7];
         for (int i = 0; i < 7; i++)
         {
-            days[i] = std::stoi(argv[16 + i], nullptr, 0);
+            days[i] = std::stoi(argv[17 + i], nullptr, 0);
         }
 
-        meeting = new Meeting(argv[0], argv[1], argv[2], meetingTime, firstDate, secondDate, days);
+        meeting = new Meeting(argv[1], argv[2], argv[3], meetingTime, firstDate, secondDate, days);
     }
     else
     {
-        meeting = new Meeting(argv[0], argv[1], argv[2], meetingTime, firstDate);
+        meeting = new Meeting(argv[1], argv[2], argv[3], meetingTime, firstDate);
     }
 
     std::vector<Meeting*> *meetings = (std::vector<Meeting*> *) data;
@@ -291,7 +299,7 @@ int UserData::MeetingCallback(void *data, int argc, char **argv, char **azColNam
 }
 
 // This function expects 'data' to be a pointer to vector of strings
-int UserData::ContactCallback(void *data, int argc, char **argv, char **azColName)
+int UserData::ContactCallback(void *data, int argc, char **argv, char **colName)
 {
     std::vector<std::string> *contacts = (std::vector<std::string> *) data;
     contacts->push_back(argv[0]);
@@ -299,9 +307,19 @@ int UserData::ContactCallback(void *data, int argc, char **argv, char **azColNam
     return 0;
 }
 
+// This function expects 'data' to be a pointer to an integer
+int UserData::IDCallback(void *data, int argc, char **argv, char **colName)
+{
+    int *id = (int *) data;
+    *id = argv[0] ? std::stoi(argv[0]) : -1;
+
+    return 0;
+}
+
 void UserData::CreateDatabase(sqlite3 *database)
 {
-    sqlite3_exec(database, "CREATE TABLE MEETINGS (Name TEXT PRIMARY KEY," \
+    sqlite3_exec(database, "CREATE TABLE MEETINGS (ID INTEGER PRIMARY KEY," \
+                                                  "Name TEXT," \
                                                   "Link TEXT," \
                                                   "Contact TEXT," \
                                                   "StartHour INTEGER," \

@@ -29,9 +29,10 @@ public:
 
 private:
     UserData(){}
-    static int Callback(void *data, int argc, char **argv, char **azColName);
-    static int MeetingCallback(void *data, int argc, char **argv, char **azColName);
-    static int ContactCallback(void *data, int argc, char **argv, char **azColName);
+    static int Callback(void *data, int argc, char **argv, char **colName);
+    static int MeetingCallback(void *data, int argc, char **argv, char **colName);
+    static int ContactCallback(void *data, int argc, char **argv, char **colName);
+    static int IDCallback(void *data, int argc, char **argv, char **colName);
     static void CreateDatabase(sqlite3 *database);
     static void OpenDatabase(sqlite3 **database, std::string name = "user_data.db");
 };

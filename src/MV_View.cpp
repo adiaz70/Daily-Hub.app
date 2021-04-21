@@ -1,7 +1,7 @@
 // MV_View.cpp -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 4/12/21
+// Last edited on 4/20/21
 
 #include "MV_View.h"
 #include "wx/hyperlink.h"
@@ -10,11 +10,11 @@
 // Public member functions. *
 //***************************
 
-MV_View::MV_View(Meeting *_meeting, const int id, const wxPoint& pos, DailyHub* _hub)
-        : HubFrame(wxString(_meeting->GetName()), id, pos, wxDefaultSize)
+MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _hub)
+        : HubFrame(wxString(meeting->GetName()), id, pos, wxDefaultSize)
 {
     hub = _hub;
-    meeting = _meeting;
+    name = meeting->GetName();
 
     wxMenu *fileMenu = new wxMenu;
     fileMenu->Append(ID_OpenTempHome, "&Open Home");
@@ -67,10 +67,7 @@ void MV_View::OnClosed(wxCloseEvent& event)
     // Make sure the app has forgotten this frame before destroying it
     if (!forgotten)
         hub->ForgetFrame(this);
-    // Just want to make the pointer a nullptr once there's a separate list of objects
-    // But for these test meetings that don't exist anywhere else, need to free the memory
-    // meeting = nullptr;
-    delete(meeting);
+
     Destroy();
 }
 
