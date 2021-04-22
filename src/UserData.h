@@ -2,6 +2,7 @@
 // MS: 4/15/21 - initial code
 // MS: 4/18/21 - can now build objects after querying the database, and contacts are handled as strings rather than objects
 // MS: 4/21/21 - added support for saving and reading notes
+// MS: 4/21/21 - added function to sanitize user input
 
 #ifndef USER_DATA_H
 #define USER_DATA_H
@@ -39,6 +40,7 @@ private:
     static int NotesCallback(void *data, int argc, char **argv, char **colName);
     static void CreateDatabase(sqlite3 *database);
     static void OpenDatabase(sqlite3 **database, std::string name = "user_data.db");
+    static void SanitizeString(std::string *text, std::string escapeSequence = "\'");
 };
 
 #endif

@@ -4,6 +4,7 @@
 // MS: 4/20/21 - the database now accepts lots more information on meetings so that they can be fully reconstructed
 // MS: 4/21/21 - changed MEETINGS table primary key so that there can be matching names but unique IDs
 // MS: 4/21/21 - added NOTES table to database from which user-written notes can be read and saved to
+// MS: 4/21/21 - all user-generated strings are now sanitized before being executed in SQLite
 
 #include "UserData.h"
 #include "MeetingTime.h"
@@ -147,8 +148,14 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
     sqlite3_exec(database, "SELECT MAX(ID) FROM MEETINGS;", IDCallback, (void*) &maxID, NULL);
     sql += "VALUES (" + std::to_string(maxID + 1);
 
-    // Concatenate the meeting name, link, and contact
-    sql += ", '" + meeting->GetName() + "', '" + meeting->GetLink() + "', '" + meeting->GetContact() + "'";
+    // Concatenate the meeting name, link, and contact (after sanitizing them JUST TO BE SAFE)
+    std::string name = meeting->GetName();
+    SanitizeString(&name);
+    std::string link = meeting->GetLink();
+    SanitizeString(&link);
+    std::string contact = meeting->GetContact();
+    SanitizeString(&contact);
+    sql += ", '" + name + "', '" + link + "', '" + contact + "'";
     
     // Concatenate the meeting's start and end times
     int *times = meeting->GetMeetingTime()->GetTimes();
@@ -203,6 +210,8 @@ void UserData::AddMeeting(Meeting **meetings, int num)
 
 void UserData::AddContact(std::string contact)
 {
+    SanitizeString(&contact);
+
     sqlite3 *database;
     OpenDatabase(&database);
     std::string sql = "INSERT INTO CONTACTS (Name) VALUES ('" + contact + "');";
@@ -212,6 +221,8 @@ void UserData::AddContact(std::string contact)
 
 void UserData::SaveNotes(int meetingID, std::string notes)
 {
+    SanitizeString(&notes);
+
     sqlite3 *database;
     OpenDatabase(&database);
     std::string sql = "UPDATE NOTES SET Notes = '" + notes + "' WHERE ID = " + std::to_string(meetingID) + ";";
@@ -258,9 +269,9 @@ void UserData::ResetDatabase(bool populate)
 {
     sqlite3 *database;
     OpenDatabase(&database);
-    sqlite3_exec(database, "DROP TABLE MEETINGS", Callback, NULL, NULL);
-    sqlite3_exec(database, "DROP TABLE CONTACTS", Callback, NULL, NULL);
-    sqlite3_exec(database, "DROP TABLE NOTES", Callback, NULL, NULL);
+    sqlite3_exec(database, "DROP TABLE MEETINGS;", Callback, NULL, NULL);
+    sqlite3_exec(database, "DROP TABLE CONTACTS;", Callback, NULL, NULL);
+    sqlite3_exec(database, "DROP TABLE NOTES;", Callback, NULL, NULL);
     CreateDatabase(populate);
     sqlite3_close(database);
 }
@@ -417,4 +428,17 @@ void UserData::OpenDatabase(sqlite3 **database, std::string name)
 {
     if (sqlite3_open(name.c_str(), database) != 0)
         printf("An error occurred opening the database: %s\n", sqlite3_errmsg(*database));
+}
+
+void UserData::SanitizeString(std::string *text, std::string escapeSequence)
+{
+    for (int i = 0; i < text->length(); i++)
+    {
+        if ((*text)[i] == '\'')
+        {
+            text->insert((size_t) i, escapeSequence);
+            // Make sure to bump the index ahead so that it doesn't keep counting the same apostrophe forever
+            i++;
+        }
+    }
 }
