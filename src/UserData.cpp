@@ -5,6 +5,8 @@
 // MS: 4/21/21 - changed MEETINGS table primary key so that there can be matching names but unique IDs
 // MS: 4/21/21 - added NOTES table to database from which user-written notes can be read and saved to
 // MS: 4/21/21 - all user-generated strings are now sanitized before being executed in SQLite
+// MS: 4/23/21 - rearranged a couple of functions for greater privacy and efficiency
+// MS: 4/25/21 - added a couple of functions to sort meetings according to date
 
 #include "UserData.h"
 #include "MeetingTime.h"
@@ -25,33 +27,14 @@ std::vector<Meeting*> UserData::GetMeetings(bool print)
     sqlite3 *database;
     OpenDatabase(&database);
 
-    std::vector<Meeting*> meetings;
+    std::vector<Meeting *> meetings;
     sqlite3_exec(database, "SELECT * FROM MEETINGS ORDER BY Name", MeetingCallback, (void*) &meetings, NULL);
 
     if (print)
     {
         std::cout << "Found " << meetings.size() << " meetings.\n\n";
         for (int i = 0; i < meetings.size(); i++)
-        {
-            std::cout << "Name: " << meetings[i]->GetName() << "\n";
-            std::cout << "Link: " << meetings[i]->GetLink() << "\n";
-            std::cout << "Contact: " << meetings[i]->GetContact() << "\n";
-            if (meetings[i]->IsRecurring())
-            {
-                std::cout << std::string("This meeting recurs between ") << meetings[i]->GetFirstDate()[0] << "/" <<
-                              meetings[i]->GetFirstDate()[1] << "/" << meetings[i]->GetFirstDate()[2] <<
-                              " and " << meetings[i]->GetSecondDate()[0] << "/" << meetings[i]->GetSecondDate()[1] <<
-                              "/" << meetings[i]->GetSecondDate()[2] << "\n";
-            }
-            else
-            {
-                std::cout << "This meeting takes place on " << meetings[i]->GetFirstDate()[0] << "/" <<
-                              meetings[i]->GetFirstDate()[1] << "/" << meetings[i]->GetFirstDate()[2] << "\n";
-            }
-            int *times = meetings[i]->GetMeetingTime()->GetTimes();
-            std::cout << "It is scheduled to start at " << times[0] << ":" << times[1] << " " << (meetings[i]->GetMeetingTime()->IsStartAM() ? "AM" : "PM") <<
-            " and finish at " << times[2] << ":" << times[3] << " " << (meetings[i]->GetMeetingTime()->IsEndAM() ? "AM" : "PM") << "\n\n";
-        }
+            PrintMeetingInfo(meetings[i]);
     }
 
     sqlite3_close(database);
@@ -60,11 +43,13 @@ std::vector<Meeting*> UserData::GetMeetings(bool print)
 
 std::vector<Meeting*> UserData::GetMeetings(std::string contact, bool print)
 {
+    SanitizeString(&contact);
+
     sqlite3 *database;
     OpenDatabase(&database);
     
     std::string sql = "SELECT * FROM MEETINGS WHERE Contact = " + contact + " ORDER BY Name;";
-    std::vector<Meeting*> meetings;
+    std::vector<Meeting *> meetings;
 
     sqlite3_exec(database, sql.c_str(), MeetingCallback, (void*) &meetings, NULL);
 
@@ -72,11 +57,119 @@ std::vector<Meeting*> UserData::GetMeetings(std::string contact, bool print)
     {
         std::cout << "Found " << meetings.size() << " meetings.\n\n";
         for (int i = 0; i < meetings.size(); i++)
-        {
-            std::cout << "Name: " << meetings[i]->GetName() << "\n";
-            std::cout << "Link: " << meetings[i]->GetLink() << "\n";
-            std::cout << "Contact: " << meetings[i]->GetContact() << "\n\n";
-        }
+            PrintMeetingInfo(meetings[i]);
+    }
+
+    sqlite3_close(database);
+    return meetings;
+}
+
+// Expects dates in the format MM/DD/YY.
+// Also, any value that is -1 is ignored when filtering results.
+// For example, 12,-1,21 would get all meetings in December 2021.
+std::vector<Meeting *> UserData::GetMeetings(int date[3], bool print)
+{
+    //************************
+    // Not thoroughly tested *
+    //************************
+    std::cout << "Warning: UserData::GetMeetings(int[3], bool) has not been thoroughly tested for accuracy.\n";
+
+    // If there is no date provided at all, return empty vector with a warning
+    if (date[0] == -1 && date[1] == -1 && date[2] == -1)
+    {
+        std::cout << "No date provided to UserData::GetMeetings(int[3], bool)\nReturning empty vector\n";
+        std::vector<Meeting *> empty;
+        return empty;
+    }
+
+    sqlite3 *database;
+    OpenDatabase(&database);
+
+    // Start the SQL command
+    std::string sql = "SELECT * FROM MEETINGS WHERE ";
+    // Then add only the relevant elements of a date to the command to narrow down the results
+    if (date[0] != -1)
+    {
+        std::string date;
+        if (date[0] < 10)
+            date = "0";
+        date += std::to_string(date[0]);
+
+        sql += "strftime('%m', FirstDate) = '" + date + "'";
+
+        if (date[1] != -1 || date[2] != -1)
+            sql += ",";
+
+        sql += " ";
+    }
+    if (date[1] != -1)
+    {
+        std::string date;
+        if (date[1] < 10)
+            date = "0";
+        date += std::to_string(date[1]);
+
+        sql += "strftime('%d', FirstDate) = '" + date + "'";
+
+        if (date[2] != -1)
+            sql += ",";
+
+        sql += " ";
+    }
+    if (date[2] != -1)
+        sql += "strftime('%Y', FirstDate) = '20" + std::to_string(date[2]) + "' ";
+    // And end the command by specifying how to sort the results
+    sql += "ORDER BY IsStartAM, StartHour, StartMinute;";
+    
+    std::vector<Meeting *> meetings;
+    sqlite3_exec(database, sql.c_str(), MeetingCallback, (void*) &meetings, NULL);
+
+    if (print)
+    {
+        std::cout << "Found " << meetings.size() << " meetings.\n\n";
+        for (int i = 0; i < meetings.size(); i++)
+            PrintMeetingInfo(meetings[i]);
+    }
+
+    sqlite3_close(database);
+    return meetings;
+}
+
+// Expects dates in the format MM/DD/YY.
+// Finds and returns all meetings that occur in between startDate and endDate
+std::vector<Meeting *> UserData::GetMeetings(int startDate[3], int endDate[3], bool print)
+{
+    //************************
+    // Not thoroughly tested *
+    //************************
+    std::cout << "Warning: UserData::GetMeetings(int[3], int[3], bool) has not been thoroughly tested for accuracy.\n";
+
+    sqlite3 *database;
+    OpenDatabase(&database);
+
+    std::string sql = "SELECT * FROM MEETINGS WHERE ";
+
+    // Format the provided dates the way that SQLite wants them
+    std::string searchDates[2];
+    searchDates[0] = "20" + std::to_string(startDate[3]) + "-" + std::to_string(startDate[0]) + "-" + std::to_string(startDate[1]);
+    searchDates[0] = "20" + std::to_string(endDate[3]) + "-" + std::to_string(endDate[0]) + "-" + std::to_string(endDate[1]);
+
+    // If the meeting does not recur, make sure it's scheduled within the date range
+    sql += " (IsRecurring = 0 AND FirstDate BETWEEN " + searchDates[0] + " AND " + searchDates[1] + ") ";
+    // If the meeting does recur, make sure that it's scheduled to start or end within the search range, or that
+    // the search range starts between it's scheduled range
+    sql += "OR (IsRecurring = 1 AND ((FirstDate BETWEEN " + searchDates[0] + " AND " + searchDates[1] + ") OR " +
+           "(SecondDate BETWEEN " + searchDates[0] + " AND " + searchDates[1] + ") OR " +
+           "(" + searchDates[0] + " BETWEEN FirstDate AND SecondDate))) ORDER BY FirstDate;";
+
+    std::vector<Meeting *> meetings;
+    sqlite3_exec(database, sql.c_str(), MeetingCallback, (void*) &meetings, NULL);
+
+    if (print)
+    {
+        std::cout << "Found " << meetings.size() << " meetings.\n\n";
+        for (int i = 0; i < meetings.size(); i++)
+            PrintMeetingInfo(meetings[i]);
     }
 
     sqlite3_close(database);
@@ -139,8 +232,7 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
                                             "StartHour, StartMinute, IsStartAM, " \
                                             "EndHour, EndMinute, IsEndAM, " \
                                             "IsRecurring, " \
-                                            "FirstMonth, FirstDay, FirstYear, " \
-                                            "SecondMonth, SecondDay, SecondYear, " \
+                                            "FirstDate, SecondDate, " \
                                             "Mon, Tue, Wed, Thur, Fri, Sat, Sun) ";
 
     // Calculate a unique ID to be assigned to this meeting and concatenate it to the SQLite command
@@ -164,15 +256,35 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
 
     // Concatenate all of the information about whether the meeting recurs between two dates or occurs only once
     sql += ", " + std::to_string(meeting->IsRecurring());
+    // Convert the date into strings, making sure that each one is two characters long
+    // (e.g. 4 = 04, expected when read back from the database later)
     int *firstDate = meeting->GetFirstDate();
-    sql += ", " + std::to_string(firstDate[0]) + ", " + std::to_string(firstDate[1]) + ", " + std::to_string(firstDate[2]);
+    std::string firstDateStr[3];
+    for (int i = 0; i < 3; i++)
+    {
+        if (firstDate[i] < 10)
+            firstDateStr[i] = "0";
+
+        firstDateStr[i] += std::to_string(firstDate[i]);
+    }
+    // Format this date to match YYYY/MM/DD and insert it into the SQLite command
+    sql += ", '20" + firstDateStr[2] + "-" + firstDateStr[0] + "-" + firstDateStr[1] + "'";
+    // If this meeting is recurring, do the same thing again with the second date
     if (meeting->IsRecurring())
     {
         int *secondDate = meeting->GetSecondDate();
-        sql += ", " + std::to_string(secondDate[0]) + ", " + std::to_string(secondDate[1]) + ", " + std::to_string(secondDate[2]);
+        std::string secondDateStr[3];
+        for (int i = 0; i < 3; i++)
+        {
+            if (secondDate[i] < 10)
+                secondDateStr[i] = "0";
+
+            secondDateStr[i] += std::to_string(secondDate[i]);
+        }
+        sql += ", '20" + secondDateStr[2] + "-" + secondDateStr[0] + "-" + secondDateStr[1] + "'";
     }
     else
-        sql += ", -1, -1, -1";
+        sql += ", 'NULL'";
 
     // Concatenate the exact days of the week on which the meeting is set to recur
     for (int i = 0; i < 7; i++)
@@ -234,37 +346,6 @@ void UserData::SaveNotes(int meetingID, std::string notes)
 // Database operations *
 //**********************
 
-void UserData::CreateDatabase(bool populate)
-{
-    sqlite3 *database;
-    OpenDatabase(&database);
-    CreateDatabase(database);
-
-    if (populate)
-    {
-        std::string contact[3] = { "Alice", "Bob", "The Universe" };
-        AddContact(contact[0]);
-        AddContact(contact[1]);
-        AddContact(contact[2]);
-
-        Meeting **meetings = (Meeting **) malloc(4 * sizeof(Meeting*));
-        int times[4] = { 12, 0, 12, 45 };
-        int date[3] = { 1, 25, 22 };
-        meetings[0] = new Meeting("Design Meeting", "www.thisisnotreal.com", contact[0], new MeetingTime(times, false, false), date);
-        meetings[1] = new Meeting("Class", "www.thisisveryimportant.edu", "", new MeetingTime(times, false, false), date);
-        meetings[2] = new Meeting("Implementation Meeting", "www.thisissuperhelpful.org", contact[0], new MeetingTime(times, false, false), date);
-        meetings[3] = new Meeting("Your Destiny", "https://docs.wxwidgets.org/3.0/", contact[2], new MeetingTime(times, false, false), date);
-        AddMeeting(meetings, 4);
-        delete(meetings[0]);
-        delete(meetings[1]);
-        delete(meetings[2]);
-        delete(meetings[3]);
-        free(meetings);
-    }
-
-    sqlite3_close(database);
-}
-
 void UserData::ResetDatabase(bool populate)
 {
     sqlite3 *database;
@@ -310,21 +391,17 @@ int UserData::MeetingCallback(void *data, int argc, char **argv, char **colName)
         "EndMinute INTEGER," \                8
         "IsEndAM INTEGER," \                  9
         "IsRecurring INTEGER," \              10
-        "FirstMonth INTEGER," \               11
-        "FirstDay INTEGER," \                 12 
-        "FirstYear INTEGER," \                13  
-        "SecondMonth INTEGER," \              14
-        "SecondDay INTEGER," \                15
-        "SecondYear INTEGER," \               16
-        "Mon INTEGER," \                      17
-        "Tue INTEGER," \                      18
-        "Wed INTEGER," \                      19
-        "Thur INTEGER," \                     20
-        "Fri INTEGER," \                      21
-        "Sat INTEGER," \                      22
-        "Sun INTEGER)                         23*/
-    
-    if (argc < 24)
+        "FirstDate TEXT," \                   11
+        "SecondDate TEXT," \                  12
+        "Mon INTEGER," \                      13
+        "Tue INTEGER," \                      14
+        "Wed INTEGER," \                      15
+        "Thur INTEGER," \                     16
+        "Fri INTEGER," \                      17
+        "Sat INTEGER," \                      18
+        "Sun INTEGER)                         19*/
+
+    if (argc < 20)
     {
         std::cout << "Invalid number of arguments in MeetingCallback\n";
         return 0;
@@ -333,17 +410,31 @@ int UserData::MeetingCallback(void *data, int argc, char **argv, char **colName)
     Meeting *meeting;
     int times[4] = { std::stoi(argv[4]), std::stoi(argv[5]), std::stoi(argv[7]), std::stoi(argv[8]) };
     MeetingTime *meetingTime = new MeetingTime(times, std::stoi(argv[6]), std::stoi(argv[9]));
-    int firstDate[3] = { std::stoi(argv[11]), std::stoi(argv[12]), std::stoi(argv[13]) };
+    
+    // Expected to be formatted as: "YYYY-MM-DD"
+    std::string date = argv[11];
+    int firstDate[3] = { std::stoi(date.substr(5, 2)),
+                         std::stoi(date.substr(8, 2)),
+                         std::stoi(date.substr(2, 2)) };
 
     // If this is a recurring meeting
     if (std::stoi(argv[10]) == 1)
     {
-        int secondDate[3] = { std::stoi(argv[14]), std::stoi(argv[15]), std::stoi(argv[16]) };
+        if (argv[12] == "NULL")
+        {
+            std::cout << "Something has gone wrong in MeetingCallback.\nIsRecurring = true but SecondDate = NULL\n\n";
+            return 0;
+        }
+
+        date = argv[12];
+        int secondDate[3] = { std::stoi(date.substr(5, 2)),
+                              std::stoi(date.substr(8, 2)),
+                              std::stoi(date.substr(2, 2)) };
 
         bool days[7];
         for (int i = 0; i < 7; i++)
         {
-            days[i] = std::stoi(argv[17 + i], nullptr, 0);
+            days[i] = std::stoi(argv[13 + i], nullptr, 0);
         }
 
         meeting = new Meeting(argv[1], argv[2], argv[3], meetingTime, firstDate, secondDate, days);
@@ -389,8 +480,11 @@ int UserData::NotesCallback(void *data, int argc, char **argv, char **colName)
     return 0;
 }
 
-void UserData::CreateDatabase(sqlite3 *database)
+void UserData::CreateDatabase(bool populate)
 {
+    sqlite3 *database;
+    OpenDatabase(&database);
+
     sqlite3_exec(database, "CREATE TABLE MEETINGS (ID INTEGER PRIMARY KEY," \
                                                   "Name TEXT," \
                                                   "Link TEXT," \
@@ -402,12 +496,8 @@ void UserData::CreateDatabase(sqlite3 *database)
                                                   "EndMinute INTEGER," \
                                                   "IsEndAM INTEGER," \
                                                   "IsRecurring INTEGER," \
-                                                  "FirstMonth INTEGER," \
-                                                  "FirstDay INTEGER," \
-                                                  "FirstYear INTEGER," \
-                                                  "SecondMonth INTEGER," \
-                                                  "SecondDay INTEGER," \
-                                                  "SecondYear INTEGER," \
+                                                  "FirstDate TEXT," \
+                                                  "SecondDate TEXT," \
                                                   "Mon INTEGER," \
                                                   "Tue INTEGER," \
                                                   "Wed INTEGER," \
@@ -419,6 +509,31 @@ void UserData::CreateDatabase(sqlite3 *database)
     sqlite3_exec(database, "CREATE TABLE CONTACTS (Name TEXT PRIMARY KEY);", Callback, NULL, NULL);
 
     sqlite3_exec(database, "CREATE TABLE NOTES (ID INTEGER PRIMARY KEY, Notes TEXT);", Callback, NULL, NULL);
+
+    // Add some test data to the database if desired
+    if (populate)
+    {
+        std::string contact[3] = { "Alice", "Bob", "The Universe" };
+        AddContact(contact[0]);
+        AddContact(contact[1]);
+        AddContact(contact[2]);
+
+        Meeting **meetings = (Meeting **) malloc(4 * sizeof(Meeting*));
+        int times[4] = { 12, 0, 12, 45 };
+        int date[3] = { 1, 25, 22 };
+        meetings[0] = new Meeting("Design Meeting", "www.thisisnotreal.com", contact[0], new MeetingTime(times, false, false), date);
+        meetings[1] = new Meeting("Class", "www.thisisveryimportant.edu", "", new MeetingTime(times, false, false), date);
+        meetings[2] = new Meeting("Implementation Meeting", "www.thisissuperhelpful.org", contact[0], new MeetingTime(times, false, false), date);
+        meetings[3] = new Meeting("Your Destiny", "https://docs.wxwidgets.org/3.0/", contact[2], new MeetingTime(times, false, false), date);
+        AddMeeting(meetings, 4);
+        delete(meetings[0]);
+        delete(meetings[1]);
+        delete(meetings[2]);
+        delete(meetings[3]);
+        free(meetings);
+    }
+
+    sqlite3_close(database);
 }
 
 // This is abstracted away so that any error-handling or specifics of finding the right filepath to the database
@@ -441,4 +556,26 @@ void UserData::SanitizeString(std::string *text, std::string escapeSequence)
             i++;
         }
     }
+}
+
+void UserData::PrintMeetingInfo(Meeting *meeting)
+{
+    std::cout << "Name: " << meeting->GetName() << "\n";
+    std::cout << "Link: " << meeting->GetLink() << "\n";
+    std::cout << "Contact: " << meeting->GetContact() << "\n";
+    if (meeting->IsRecurring())
+    {
+        std::cout << std::string("This meeting recurs between ") << meeting->GetFirstDate()[0] << "/" <<
+                    meeting->GetFirstDate()[1] << "/" << meeting->GetFirstDate()[2] <<
+                    " and " << meeting->GetSecondDate()[0] << "/" << meeting->GetSecondDate()[1] <<
+                    "/" << meeting->GetSecondDate()[2] << "\n";
+    }
+    else
+    {
+        std::cout << "This meeting takes place on " << meeting->GetFirstDate()[0] << "/" <<
+                        meeting->GetFirstDate()[1] << "/" << meeting->GetFirstDate()[2] << "\n";
+    }
+    int *times = meeting->GetMeetingTime()->GetTimes();
+    std::cout << "It is scheduled to start at " << times[0] << ":" << times[1] << " " << (meeting->GetMeetingTime()->IsStartAM() ? "AM" : "PM") <<
+                 " and finish at " << times[2] << ":" << times[3] << " " << (meeting->GetMeetingTime()->IsEndAM() ? "AM" : "PM") << "\n\n";
 }
