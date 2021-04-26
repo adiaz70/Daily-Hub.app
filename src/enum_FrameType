@@ -15,7 +15,8 @@ enum FrameType
     CVHead = 3,
     MVCreate = 4,
     CalView_Head=5,
-    MVView = 6
+    MVView = 6,
+    CreateContact = 7
 };
 
 #endif
