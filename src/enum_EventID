@@ -20,7 +20,8 @@ enum
     ID_ToggleButton = 7,
     ID_MainButton = 8,
     ID_OpenCalViewHead=9,
-    ID_OpenMVView = 10
+    ID_OpenMVView = 10,
+    ID_OpenCreateContact = 11
 };
 
 #endif

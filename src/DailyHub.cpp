@@ -9,6 +9,7 @@
 #include "MV_Create.h"
 #include "MV_View.h"
 #include "CV_Head.h"
+#include "Create_Contact.h"
 #include "enum_EventID"
 
 //***************************
@@ -55,6 +56,7 @@ void DailyHub::OpenFrame(FrameType id, void *data)
         case FrameType::MVHead: frames.push_back(new MV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
         case FrameType::MVCreate: frames.push_back(new MV_Create(NewFrameID(), wxPoint(50, 50), wxSize(460, 405), this)); break;
         case FrameType::CVHead: frames.push_back(new CV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
+        case FrameType::CreateContact: frames.push_back(new Create_Contact(NewFrameID(), wxPoint(50,50), wxSize(450, 240), this)); break;
         case FrameType::MVView: frames.push_back(new MV_View((Meeting *) data, NewFrameID(), wxPoint(50, 50), this)); break;
         default: return;
     }
