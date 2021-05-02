@@ -7,6 +7,7 @@
 // MS: 4/21/21 - all user-generated strings are now sanitized before being executed in SQLite
 // MS: 4/23/21 - rearranged a couple of functions for greater privacy and efficiency
 // MS: 4/25/21 - added a couple of functions to sort meetings according to date
+// MS: 5/1/21 - changed SQL commands to ignore case when sorting alphabetically
 
 #include "UserData.h"
 #include "MeetingTime.h"
@@ -28,7 +29,7 @@ std::vector<Meeting*> UserData::GetMeetings(bool print)
     OpenDatabase(&database);
 
     std::vector<Meeting *> meetings;
-    sqlite3_exec(database, "SELECT * FROM MEETINGS ORDER BY Name", MeetingCallback, (void*) &meetings, NULL);
+    sqlite3_exec(database, "SELECT * FROM MEETINGS ORDER BY Name COLLATE NOCASE;", MeetingCallback, (void*) &meetings, NULL);
 
     if (print)
     {
@@ -48,7 +49,7 @@ std::vector<Meeting*> UserData::GetMeetings(std::string contact, bool print)
     sqlite3 *database;
     OpenDatabase(&database);
     
-    std::string sql = "SELECT * FROM MEETINGS WHERE Contact = " + contact + " ORDER BY Name;";
+    std::string sql = "SELECT * FROM MEETINGS WHERE Contact = " + contact + " ORDER BY Name COLLATE NOCASE;";
     std::vector<Meeting *> meetings;
 
     sqlite3_exec(database, sql.c_str(), MeetingCallback, (void*) &meetings, NULL);
@@ -182,7 +183,7 @@ std::vector<std::string> UserData::GetContacts(bool print)
     OpenDatabase(&database);
 
     std::vector<std::string> contacts;
-    sqlite3_exec(database, "SELECT * FROM CONTACTS ORDER BY Name;", ContactCallback, (void*) &contacts, NULL);
+    sqlite3_exec(database, "SELECT * FROM CONTACTS ORDER BY Name COLLATE NOCASE;", ContactCallback, (void*) &contacts, NULL);
 
     // Check if the first element in the vector is blank because a meeting exists with no assigned contact.
     // If so, remove it

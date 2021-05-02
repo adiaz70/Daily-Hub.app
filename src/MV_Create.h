@@ -16,7 +16,7 @@
 class MV_Create: public HubFrame
 {
 public:
-    MV_Create(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub);
+    MV_Create(const int id, const wxPoint& pos, DailyHub* _hub);
     FrameType GetFrameType();
 
 private:

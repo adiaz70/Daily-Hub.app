@@ -19,8 +19,8 @@
 // Public member functions. *
 //***************************
 
-MV_Create::MV_Create(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub)
-        : HubFrame("Daily Hub - New Meeting", id, pos, size, false)
+MV_Create::MV_Create(const int id, const wxPoint& pos, DailyHub* _hub)
+        : HubFrame("Daily Hub - New Meeting", id, pos, wxSize(460, 405), false)
 {
     hub = _hub;
 
