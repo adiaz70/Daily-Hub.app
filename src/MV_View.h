@@ -1,7 +1,7 @@
 // MV_View.h -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 4/21/21
+// Last edited on 5/3/21
 
 #ifndef MV_VIEW_H
 #define MV_VIEW_H
@@ -22,6 +22,7 @@ public:
 
 private:
     void OnOpenHome(wxCommandEvent& event);
+    void OnOpenMVHead(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);

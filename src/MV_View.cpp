@@ -1,7 +1,7 @@
 // MV_View.cpp -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 4/21/21
+// Last edited on 5/3/21
 
 #include "MV_View.h"
 #include "wx/hyperlink.h"
@@ -36,11 +36,26 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
 
     wxBoxSizer *linkSizer = new wxBoxSizer(wxHORIZONTAL);
     linkSizer->Add(new wxStaticText(this, 0, "Meeting Link:"), wxSizerFlags(0).Center().Border(wxLEFT, 15));
-    linkSizer->Add(new wxHyperlinkCtrl(this, 0, wxString(meeting->GetLink()), wxString(meeting->GetLink())),
-                   wxSizerFlags(0).Center().Border(wxLEFT, 5));
+    if (meeting->GetLink().length() != 0)
+    {
+        std::string linkLabel = meeting->GetLink();
+        if (linkLabel.length() > 40)
+            linkLabel = linkLabel.substr(0, 37) + "...";
+
+        linkSizer->Add(new wxHyperlinkCtrl(this, 0, wxString(linkLabel), wxString(meeting->GetLink())),
+                        wxSizerFlags(0).Center().Border(wxLEFT, 5));
+    }
+    else
+    {
+        wxStaticText *noLinkLabel = new wxStaticText(this, 0, "none");
+        wxFont font = noLinkLabel->GetFont();
+        font.MakeItalic();
+        noLinkLabel->SetFont(font);
+        linkSizer->Add(noLinkLabel, wxSizerFlags(0).Center().Border(wxLEFT, 15));
+    }
     topSizer->Add(linkSizer, wxSizerFlags(0).Center().Border(wxUP, 15));
 
-    notes = new wxTextCtrl(this, 0, UserData::GetNotes(meetingID), wxDefaultPosition, wxSize(150, 150), wxTE_MULTILINE);
+    notes = new wxTextCtrl(this, 0, UserData::GetNotes(meetingID), wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE);
     topSizer->Add(notes, wxSizerFlags(1).Border(wxALL, 15).Expand());
 
     SetSizerAndFit(topSizer);
@@ -58,6 +73,11 @@ FrameType MV_View::GetFrameType()
 void MV_View::OnOpenHome(wxCommandEvent& event)
 {
     hub->OpenUniqueFrame(FrameType::TempHome);
+}
+
+void MV_View::OnOpenMVHead(wxCommandEvent& event)
+{
+    hub->OpenUniqueFrame(FrameType::MVHead);
 }
 
 // This is called when the menu option to close the window is selected
@@ -87,6 +107,7 @@ void MV_View::OnQuit(wxCommandEvent& event)
 
 wxBEGIN_EVENT_TABLE(MV_View, wxFrame)
     EVT_MENU(ID_OpenTempHome, MV_View::OnOpenHome)
+    EVT_MENU(ID_OpenMVHead, MV_View::OnOpenMVHead)
     EVT_MENU(ID_CloseFrame, MV_View::OnExit)
     EVT_MENU(wxID_EXIT, MV_View::OnQuit)
     EVT_CLOSE(MV_View::OnClosed)
