@@ -321,6 +321,18 @@ void UserData::AddMeeting(Meeting **meetings, int num)
     sqlite3_close(database);
 }
 
+// MS: 5/3/21 - added function
+void UserData::DeleteMeeting(Meeting *meeting)
+{
+    sqlite3 *database;
+    OpenDatabase(&database);
+    std::string sql = "DELETE FROM MEETINGS WHERE ID = " + std::to_string(meeting->GetID()) + ";";
+    sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
+    sql = "DELETE FROM NOTES WHERE ID = " + std::to_string(meeting->GetID()) + ";";
+    sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
+    sqlite3_close(database);
+}
+
 void UserData::AddContact(std::string contact)
 {
     SanitizeString(&contact);

@@ -28,6 +28,7 @@ public:
     // Setters
     static void AddMeeting(Meeting *meeting, sqlite3 *database = nullptr);
     static void AddMeeting(Meeting **meetings, int num);
+    static void DeleteMeeting(Meeting *meeting);
     static void AddContact(std::string contact);
     static void SaveNotes(int meetingID, std::string notes);
 

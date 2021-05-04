@@ -1,7 +1,7 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 5/1/21
+// Last edited on 5/3/21
 
 #include "MV_Head.h"
 #include "UserData.h"
@@ -99,7 +99,16 @@ void MV_Head::OnCreate(wxCommandEvent& event)
 
 void MV_Head::OnDelete(wxCommandEvent& event)
 {
-
+    // Credit: https://wiki.wxwidgets.org/WxListCtrl
+    // Find the index of the selected item, if it exists
+    long itemIndex = -1;
+    while ((itemIndex = meetingsList->GetNextItem(itemIndex, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND)
+    {
+        UserData::DeleteMeeting(meetings[itemIndex]);
+        delete(meetings[itemIndex]);
+        meetings.erase(meetings.begin() + itemIndex);
+        meetingsList->DeleteItem(itemIndex);
+    }
 }
 
 // This is called when the menu option to close the window is selected
