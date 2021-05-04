@@ -210,11 +210,15 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, DailyHub* _hub, Meeting* 
         {
             meetingAM_PM[0]->SetValue(false);
             meetingAM_PM[1]->SetValue(true);
+
+            isStartAM = false;
         }
         if (!meeting->GetMeetingTime()->IsEndAM())
         {
             meetingAM_PM[2]->SetValue(false);
             meetingAM_PM[3]->SetValue(true);
+
+            isEndAM = false;
         }
 
         int *firstDate = meeting->GetFirstDate();

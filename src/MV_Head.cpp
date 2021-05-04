@@ -1,7 +1,7 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 5/3/21
+// Last edited on 5/4/21
 
 #include "MV_Head.h"
 #include "UserData.h"
@@ -165,47 +165,27 @@ void MV_Head::OnPrintContacts(wxCommandEvent& event)
     UserData::GetContacts(true);
 }
 
-// If the window has lost focus, a meeting or contact might have been added or deleted and could throw off the meeting selection.
-// So, refresh the meetings list every time the window is raised to the focus
 void MV_Head::OnActivate(wxActivateEvent& event)
 {
-    // Unfortunately, checking GetActive() is not very good at *only* catching when the window is brought back to the focus
-    // because it also grabs every interaction with the window that leaves it as the focus (such as dragging it across the screen)
+    // Whenever the window was activated in some way
     if (event.GetActive())
     {
-        std::vector<Meeting *> newMeetings = UserData::GetMeetings();
-
-        // So, iterate through every meeting and search for any differences.
-        bool discrepancy = false;
-        for (int i = 0; i < meetings.size(); i++)
+        // Compare the last time the list was updated with the last time the database was accessed,
+        // and update the list if the database was accessed more recently
+        if (lastListUpdateTime < UserData::GetLastAccessTime())
         {
-            if (meetings[i]->GetID() != newMeetings[i]->GetID())
-            {
-                discrepancy = true;
-                break;
-            }
-        }
-        
-        //******************************************************************************************
-        // To-do: This doesn't refresh if a meeting has only been edited, not added or deleted.    *
-        // Might want to change it to be based off of the time of the last change to the database? *
-        //******************************************************************************************
+            // Update the time
+            lastListUpdateTime = UserData::GetLastAccessTime();
 
-        // If there is a difference, clear and recreate the entire list
-        if (discrepancy)
-        {
+            // Free the memory from the old list of meetings
             for (int i = 0; i < meetings.size(); i++)
                 delete(meetings[i]);
             meetingsList->DeleteAllItems();
 
-            meetings = newMeetings;
+            // And create a new list
+            meetings = UserData::GetMeetings();
             for (int i = 0; i < meetings.size(); i++)
                 FillColumn(meetings[i], i);
-        }
-        else
-        {
-            for (int i = 0; i < newMeetings.size(); i++)
-                delete(newMeetings[i]);
         }
     }
 

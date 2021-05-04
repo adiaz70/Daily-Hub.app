@@ -9,6 +9,7 @@
 // MS: 4/25/21 - added a couple of functions to sort meetings according to date
 // MS: 5/1/21 - changed SQL commands to ignore case when sorting alphabetically
 // MS: 5/4/21 - abstracted formatting a string for the date into a new function
+// MS: 5/4/21 - added static variable to track the last time that the database was accessed
 
 #include "UserData.h"
 #include "MeetingTime.h"
@@ -216,6 +217,11 @@ std::string UserData::GetNotes(int meetingID)
     return notes;
 }
 
+time_t UserData::GetLastAccessTime()
+{
+    return lastAccessTime;
+}
+
 //**********
 // Setters *
 //**********
@@ -398,6 +404,9 @@ void UserData::ResetDatabase(bool populate)
 // Private member functions. *
 //****************************
 
+// Define private static member variable 'lastAccessTime'
+time_t UserData::lastAccessTime = time(0);
+
 // References:
 // https://www.sqlite.org/c3ref/exec.html
 // https://www.tutorialspoint.com/sqlite/sqlite_c_cpp.htm
@@ -578,6 +587,8 @@ void UserData::CreateDatabase(bool populate)
 // it already abstracted away.
 void UserData::OpenDatabase(sqlite3 **database, std::string name)
 {
+    lastAccessTime = time(0);
+
     if (sqlite3_open(name.c_str(), database) != 0)
         printf("An error occurred opening the database: %s\n", sqlite3_errmsg(*database));
 }

@@ -9,6 +9,7 @@
 #include <wx/wx.h>
 #include <wx/listctrl.h>
 #include <vector>
+#include <ctime>
 #include "DailyHub.h"
 #include "HubFrame.h"
 #include "Meeting.h"
@@ -47,6 +48,7 @@ private:
     DailyHub *hub;
     wxListCtrl *meetingsList;
     std::vector<Meeting *> meetings;
+    time_t lastListUpdateTime = time(0);
 
     wxDECLARE_EVENT_TABLE();
 };

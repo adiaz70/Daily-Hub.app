@@ -5,7 +5,7 @@
 // MS: 4/21/21 - added function to sanitize user input
 // MS: 4/23/21 - rearranged a couple of functions for greater privacy and efficiency
 // MS: 4/25/21 - added a couple of functions to sort meetings according to date
-// MS: 5/4/21 - abstracted formatting a string for the date into a new function and added function to update a meeting
+// MS: 5/4/21 - abstracted formatting a string for the date into a new function, added function to update a meeting, and variable to track last access time
 
 #ifndef USER_DATA_H
 #define USER_DATA_H
@@ -13,6 +13,7 @@
 #include <sqlite3.h>
 #include <string.h>
 #include <vector>
+#include <ctime>
 #include "Meeting.h"
 
 class UserData
@@ -25,6 +26,7 @@ public:
     static std::vector<Meeting *> GetMeetings(int startDate[3], int endDate[3], bool print = false);
     static std::vector<std::string> GetContacts(bool print = false);
     static std::string GetNotes(int meetingID);
+    static time_t GetLastAccessTime();
 
     // Setters
     static void AddMeeting(Meeting *meeting, sqlite3 *database = nullptr);
@@ -49,6 +51,8 @@ private:
     static void SanitizeString(std::string *text, std::string escapeSequence = "\'");
     static std::string FormatDateString(int *date);
     static void PrintMeetingInfo(Meeting *meeting);
+
+    static time_t lastAccessTime;
 };
 
 #endif
