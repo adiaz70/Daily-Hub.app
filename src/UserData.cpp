@@ -557,21 +557,36 @@ void UserData::CreateDatabase(bool populate)
     sqlite3_exec(database, "CREATE TABLE NOTES (ID INTEGER PRIMARY KEY, Notes TEXT);", Callback, NULL, NULL);
 
     // Add some test data to the database if desired
+    // MS: 5/4/21 - changed sample data to be more realistic/detailed
     if (populate)
     {
-        std::string contact[3] = { "Alice", "Bob", "The Universe" };
+        std::string contact[3] = { "CMPS 3350", "Daily Hub Team", "The Universe" };
         AddContact(contact[0]);
         AddContact(contact[1]);
         AddContact(contact[2]);
 
-        Meeting **meetings = (Meeting **) malloc(4 * sizeof(Meeting*));
-        int times[4] = { 12, 0, 12, 45 };
-        int date[3] = { 1, 25, 22 };
-        meetings[0] = new Meeting("Design Meeting", "www.thisisnotreal.com", contact[0], new MeetingTime(times, false, false), date);
-        meetings[1] = new Meeting("Class", "www.thisisveryimportant.edu", "", new MeetingTime(times, false, false), date);
-        meetings[2] = new Meeting("Implementation Meeting", "www.thisissuperhelpful.org", contact[0], new MeetingTime(times, false, false), date);
-        meetings[3] = new Meeting("Your Destiny", "https://docs.wxwidgets.org/3.0/", contact[2], new MeetingTime(times, false, false), date);
-        AddMeeting(meetings, 4);
+        Meeting **meetings = (Meeting **) malloc(5 * sizeof(Meeting*));
+        // Create meetings for the lecture and lab times for the class this project is for
+        int lectureTimes[4] = { 10, 0, 10, 50 };
+        int labTimes[4] = { 10, 0, 12, 30 };
+        int classStartDate[3] = { 1, 25, 21 };
+        int classEndDate[3] = { 5, 14, 21 };
+        bool lectureDays[7] = { 1, 0, 1, 0, 1, 0, 0 };
+        bool labDays[7] = { 0, 1, 0, 0, 0, 0, 0 };
+        meetings[0] = new Meeting("Lecture", "https://csub.zoom.us/j/88490634128?pwd=V0t4U0FVdVBtb25DRWRkNTg2ZGF3UT09", contact[0], new MeetingTime(lectureTimes, true, true), classStartDate, classEndDate, lectureDays);
+        meetings[1] = new Meeting("Lab", "https://csub.zoom.us/j/88490634128?pwd=V0t4U0FVdVBtb25DRWRkNTg2ZGF3UT09", contact[0], new MeetingTime(labTimes, true, false), classStartDate, classEndDate, labDays);
+        // Create a meeting for when I *think* we're going to be presenting this project
+        int finalDate[3] = { 5, 18, 21 };
+        meetings[2] = new Meeting("Project Demo", "https://csub.zoom.us/j/88490634128?pwd=V0t4U0FVdVBtb25DRWRkNTg2ZGF3UT09", contact[0], new MeetingTime(labTimes, true, false), finalDate);
+        // I just think this one is funny
+        int destinyDate[3] = { 12, 31, 99 };
+        int destinyTimes[4] = { 12, 58, 12, 59 };
+        meetings[3] = new Meeting("Your Destiny", "https://docs.wxwidgets.org/3.0/", contact[2], new MeetingTime(destinyTimes, false, false), destinyDate);
+        // And finally, I want to have a sample meeting with our team (although the specific time that I've put down here may not ever happen)
+        int workDate[3] = { 5, 16, 21 };
+        int workTime[4] = { 4, 0, 6, 0 };
+        meetings[4] = new Meeting("Final Work Session", "https://discord.com", contact[1], new MeetingTime(workTime, false, false), workDate);
+        AddMeeting(meetings, 5);
         delete(meetings[0]);
         delete(meetings[1]);
         delete(meetings[2]);

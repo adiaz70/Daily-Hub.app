@@ -11,7 +11,7 @@
 // Public member functions. *
 //***************************
 
-MV_Head::MV_Head(const int id, const wxPoint& pos, DailyHub* _hub)
+MV_Head::MV_Head(const int id, const wxPoint& pos, DailyHub *_hub)
         : HubFrame("Meeting View", id, pos, wxSize(520, 340))
 {
     hub = _hub;
@@ -236,7 +236,10 @@ void MV_Head::FillColumn(Meeting *meeting, int startIndex)
         {
             if (days[i])
             {
-                daysString += dayNames[i] + " ";
+                if (daysString.length() != 0)
+                    daysString += ", ";
+
+                daysString += dayNames[i];
             }
         }
         meetingsList->SetItem(startIndex, 3, wxString(daysString));
