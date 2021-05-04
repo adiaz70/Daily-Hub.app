@@ -1,5 +1,6 @@
 // TempHomeFrame.cpp
 // MS: 3/14/21 - initial code
+// MS: 5/4/21 - added intro/credits screen
 
 // This is just a temporary home screen that can open the others, meant to be
 // replaced and expanded at a later date.
@@ -12,13 +13,17 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, const wxSize& siz
     hub = _hub;
 
     wxMenu *menuFile = new wxMenu;
-    menuFile->Append(ID_OpenMVHead, "&Open Meeting View");
-    menuFile->Append(ID_OpenCVHead, "&Open new contacts window");
+    menuFile->Append(wxID_ABOUT, "&About");
     menuFile->Append(ID_CloseFrame, "&Close window");
     menuFile->Append(wxID_EXIT, "&Quit");
 
+    wxMenu *menuWindow = new wxMenu;
+    menuWindow->Append(ID_OpenMVHead, "&Open Meeting View");
+    menuWindow->Append(ID_OpenCVHead, "&Open new contacts window");
+
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
+    menuBar->Append(menuWindow, "&Windows");
     SetMenuBar( menuBar );
 }
 
@@ -35,6 +40,11 @@ void TempHomeFrame::OnOpenMVHead(wxCommandEvent& event)
 void TempHomeFrame::OnOpenCVHead(wxCommandEvent& event)
 {
     hub->OpenFrame(FrameType::CVHead);
+}
+
+void TempHomeFrame::OnOpenAbout(wxCommandEvent& event)
+{
+    hub->OpenUniqueFrame(FrameType::About);
 }
 
 // This is called when the menu option to close the window is selected
@@ -61,6 +71,7 @@ void TempHomeFrame::OnQuit(wxCommandEvent& event)
 wxBEGIN_EVENT_TABLE(TempHomeFrame, wxFrame)
     EVT_MENU(ID_OpenMVHead, TempHomeFrame::OnOpenMVHead)
     EVT_MENU(ID_OpenCVHead, TempHomeFrame::OnOpenCVHead)
+    EVT_MENU(wxID_ABOUT, TempHomeFrame::OnOpenAbout)
     EVT_MENU(ID_CloseFrame,  TempHomeFrame::OnExit)
     EVT_MENU(wxID_EXIT, TempHomeFrame::OnQuit)
     EVT_CLOSE(TempHomeFrame::OnClosed)

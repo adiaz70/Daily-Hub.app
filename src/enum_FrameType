@@ -2,6 +2,7 @@
 // MS: 3/14/21 - initial code
 // MS: 3/20/21 - added MVCreate
 // MS: 4/12/21 - added MVView
+// MS: 5/4/21 - added About
 
 #ifndef ENUM_FRAME_TYPE
 #define ENUM_FRAME_TYPE
@@ -16,7 +17,8 @@ enum FrameType
     MVCreate = 4,
     CalView_Head=5,
     MVView = 6,
-    CreateContact = 7
+    CreateContact = 7,
+    About = 8
 };
 
 #endif
