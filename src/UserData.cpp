@@ -8,6 +8,7 @@
 // MS: 4/23/21 - rearranged a couple of functions for greater privacy and efficiency
 // MS: 4/25/21 - added a couple of functions to sort meetings according to date
 // MS: 5/1/21 - changed SQL commands to ignore case when sorting alphabetically
+// MS: 5/4/21 - abstracted formatting a string for the date into a new function
 
 #include "UserData.h"
 #include "MeetingTime.h"
@@ -257,33 +258,9 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
 
     // Concatenate all of the information about whether the meeting recurs between two dates or occurs only once
     sql += ", " + std::to_string(meeting->IsRecurring());
-    // Convert the date into strings, making sure that each one is two characters long
-    // (e.g. 4 = 04, expected when read back from the database later)
-    int *firstDate = meeting->GetFirstDate();
-    std::string firstDateStr[3];
-    for (int i = 0; i < 3; i++)
-    {
-        if (firstDate[i] < 10)
-            firstDateStr[i] = "0";
-
-        firstDateStr[i] += std::to_string(firstDate[i]);
-    }
-    // Format this date to match YYYY/MM/DD and insert it into the SQLite command
-    sql += ", '20" + firstDateStr[2] + "-" + firstDateStr[0] + "-" + firstDateStr[1] + "'";
-    // If this meeting is recurring, do the same thing again with the second date
+    sql += ", '" + FormatDateString(meeting->GetFirstDate()) + "'";
     if (meeting->IsRecurring())
-    {
-        int *secondDate = meeting->GetSecondDate();
-        std::string secondDateStr[3];
-        for (int i = 0; i < 3; i++)
-        {
-            if (secondDate[i] < 10)
-                secondDateStr[i] = "0";
-
-            secondDateStr[i] += std::to_string(secondDate[i]);
-        }
-        sql += ", '20" + secondDateStr[2] + "-" + secondDateStr[0] + "-" + secondDateStr[1] + "'";
-    }
+        sql += ", '" + FormatDateString(meeting->GetSecondDate()) + "'";
     else
         sql += ", 'NULL'";
 
@@ -318,6 +295,53 @@ void UserData::AddMeeting(Meeting **meetings, int num)
         AddMeeting(meetings[i], database);
     }
 
+    sqlite3_close(database);
+}
+
+// MS: 5/4/21 - added function
+void UserData::UpdateMeeting(Meeting *meeting)
+{
+    sqlite3 *database;
+    OpenDatabase(&database);
+    std::string sql = "UPDATE MEETINGS SET ";
+
+    std::string name = meeting->GetName();
+    std::string link = meeting->GetLink();
+    std::string contact = meeting->GetContact();
+    SanitizeString(&name);
+    SanitizeString(&link);
+    SanitizeString(&contact);
+    sql += "Name = '" + name + "', ";
+    sql += "Contact = '" + contact + "', ";
+    sql += "Link = '" + link + "', ";
+
+    int *times = meeting->GetMeetingTime()->GetTimes();
+    sql += "StartHour = " + std::to_string(times[0]) + ", ";
+    sql += "StartMinute = " + std::to_string(times[1]) + ", ";
+    sql += "IsStartAM = " + std::to_string(meeting->GetMeetingTime()->IsStartAM()) + ", ";
+    sql += "EndHour = " + std::to_string(times[2]) + ", ";
+    sql += "EndMinute = " + std::to_string(times[3]) + ", ";
+    sql += "IsEndAM = " + std::to_string(meeting->GetMeetingTime()->IsEndAM()) + ", ";
+
+    sql += "IsRecurring = " + std::to_string(meeting->IsRecurring()) + ", ";
+    sql += "FirstDate = '" + FormatDateString(meeting->GetFirstDate()) + "', ";
+    sql += "SecondDate = '" + (meeting->IsRecurring() ? FormatDateString(meeting->GetSecondDate()) : "NULL") + "', ";
+
+    std::string days[7] = { "Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun" };
+    bool *recurringDays = meeting->GetRecurringDays();
+    for (int i = 0; i < 7; i++)
+    {
+        sql += days[i] + " = " + std::to_string(recurringDays[i]);
+        
+        if (i < 6)
+            sql += ", ";
+        else
+            sql += " ";
+    }
+    
+    sql += "WHERE ID = " + std::to_string(meeting->GetID()) + ";";
+
+    sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
     sqlite3_close(database);
 }
 
@@ -569,6 +593,21 @@ void UserData::SanitizeString(std::string *text, std::string escapeSequence)
             i++;
         }
     }
+}
+
+// Convert the date from three integers (MM/DD/YY) into a string (YYYY/MM/DD) for the database.
+// Also, making sure that there are no single-digit entries (e.g. 4 = 04, expected when read back from the database later).
+std::string UserData::FormatDateString(int *date)
+{
+    std::string dateString = "20" + std::to_string(date[2]) + "-";
+    if (date[0] < 10)
+        dateString += "0";
+    dateString += std::to_string(date[0]) + "-";
+    if (date[1] < 10)
+        dateString += "0";
+    dateString += std::to_string(date[1]);
+
+    return dateString;
 }
 
 void UserData::PrintMeetingInfo(Meeting *meeting)

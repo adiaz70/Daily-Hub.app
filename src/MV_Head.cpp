@@ -62,6 +62,7 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, DailyHub* _hub)
 
     wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     buttonSizer->Add(new wxButton(this, wxID_DELETE, "Delete"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
+    buttonSizer->Add(new wxButton(this, wxID_EDIT, "Edit"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     buttonSizer->Add(new wxButton(this, ID_OpenMVView, "Open"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 10));
 
@@ -95,6 +96,17 @@ void MV_Head::OnDoubleClick(wxListEvent& event)
 void MV_Head::OnCreate(wxCommandEvent& event)
 {
     hub->OpenUniqueFrame(FrameType::MVCreate);
+}
+
+void MV_Head::OnEdit(wxCommandEvent& event)
+{
+    // Credit: https://wiki.wxwidgets.org/WxListCtrl
+    // Find the index of the selected item, if it exists
+    long itemIndex = -1;
+    while ((itemIndex = meetingsList->GetNextItem(itemIndex, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED)) != wxNOT_FOUND)
+    {
+        hub->OpenFrame(FrameType::MVCreate, (void *) meetings[itemIndex]);
+    }
 }
 
 void MV_Head::OnDelete(wxCommandEvent& event)
@@ -173,6 +185,11 @@ void MV_Head::OnActivate(wxActivateEvent& event)
                 break;
             }
         }
+        
+        //******************************************************************************************
+        // To-do: This doesn't refresh if a meeting has only been edited, not added or deleted.    *
+        // Might want to change it to be based off of the time of the last change to the database? *
+        //******************************************************************************************
 
         // If there is a difference, clear and recreate the entire list
         if (discrepancy)
@@ -257,6 +274,7 @@ wxBEGIN_EVENT_TABLE(MV_Head, wxFrame)
     EVT_MENU(wxID_YESTOALL, MV_Head::OnPrintContacts)
     EVT_LIST_ITEM_ACTIVATED(wxID_ANY, MV_Head::OnDoubleClick)
     EVT_BUTTON(ID_OpenMVView, MV_Head::OnOpenMeeting)
+    EVT_BUTTON(wxID_EDIT, MV_Head::OnEdit)
     EVT_BUTTON(wxID_DELETE, MV_Head::OnDelete)
     EVT_ACTIVATE(MV_Head::OnActivate)
     EVT_CLOSE(MV_Head::OnClosed)

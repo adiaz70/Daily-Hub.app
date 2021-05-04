@@ -27,6 +27,7 @@ private:
     void OnOpenMeeting(wxCommandEvent& event);
     void OnDoubleClick(wxListEvent& event);
     void OnCreate(wxCommandEvent& event);
+    void OnEdit(wxCommandEvent& event);
     void OnDelete(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);

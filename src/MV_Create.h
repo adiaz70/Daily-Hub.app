@@ -10,13 +10,14 @@
 #include <wx/tglbtn.h>
 #include "DailyHub.h"
 #include "HubFrame.h"
+#include "Meeting.h"
 #include "enum_FrameType"
 #include "enum_EventID"
 
 class MV_Create: public HubFrame
 {
 public:
-    MV_Create(const int id, const wxPoint& pos, DailyHub* _hub);
+    MV_Create(const int id, const wxPoint& pos, DailyHub* _hub, Meeting* meeting = nullptr);
     FrameType GetFrameType();
 
 private:
@@ -43,6 +44,8 @@ private:
     bool recurring = false;
     bool isStartAM = true;
     bool isEndAM = true;
+    bool isEdit = false;
+    int meetingID = -1;
 
     wxDECLARE_EVENT_TABLE();
 };

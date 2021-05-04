@@ -5,6 +5,7 @@
 // MS: 4/21/21 - added function to sanitize user input
 // MS: 4/23/21 - rearranged a couple of functions for greater privacy and efficiency
 // MS: 4/25/21 - added a couple of functions to sort meetings according to date
+// MS: 5/4/21 - abstracted formatting a string for the date into a new function and added function to update a meeting
 
 #ifndef USER_DATA_H
 #define USER_DATA_H
@@ -28,6 +29,7 @@ public:
     // Setters
     static void AddMeeting(Meeting *meeting, sqlite3 *database = nullptr);
     static void AddMeeting(Meeting **meetings, int num);
+    static void UpdateMeeting(Meeting *meeting);
     static void DeleteMeeting(Meeting *meeting);
     static void AddContact(std::string contact);
     static void SaveNotes(int meetingID, std::string notes);
@@ -45,6 +47,7 @@ private:
     static void CreateDatabase(bool populate = false);
     static void OpenDatabase(sqlite3 **database, std::string name = "user_data.db");
     static void SanitizeString(std::string *text, std::string escapeSequence = "\'");
+    static std::string FormatDateString(int *date);
     static void PrintMeetingInfo(Meeting *meeting);
 };
 

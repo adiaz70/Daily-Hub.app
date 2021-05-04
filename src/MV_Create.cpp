@@ -1,7 +1,7 @@
 // MV_Create.cpp -- the frame for creating a new meeting
 // Maintained by: Marcus Schmidt
 // Created on 3/20/21
-// Last edited on 4/20/21
+// Last edited on 5/4/21
 
 // Resources:
 // https://docs.wxwidgets.org/3.0/overview_sizer.html
@@ -10,7 +10,6 @@
 // https://docs.wxwidgets.org/3.0/classwx_text_ctrl.html
 
 #include "MV_Create.h"
-#include "Meeting.h"
 #include "MeetingTime.h"
 #include "UserData.h"
 #include <vector>
@@ -19,7 +18,7 @@
 // Public member functions. *
 //***************************
 
-MV_Create::MV_Create(const int id, const wxPoint& pos, DailyHub* _hub)
+MV_Create::MV_Create(const int id, const wxPoint& pos, DailyHub* _hub, Meeting* meeting)
         : HubFrame("Daily Hub - New Meeting", id, pos, wxSize(460, 405), false)
 {
     hub = _hub;
@@ -183,10 +182,76 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, DailyHub* _hub)
     // Add the buttons at the bottom of the window and add them to the top sizer
     wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     buttonSizer->Add(new wxButton(this, wxID_CANCEL, "Cancel"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
-    buttonSizer->Add(new wxButton(this, wxID_OK, "Create"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
+    wxButton *createButton = new wxButton(this, wxID_OK, "Create");
+    buttonSizer->Add(createButton, wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 10));
     
     SetSizer(topSizer);
+
+    // If a pointer to a meeting object was passed into the constructor, this window is meant to be used to edit its information.
+    // So, populate all of the fields with the meeting data.
+    if (meeting != nullptr)
+    {
+        isEdit = true;
+        meetingID = meeting->GetID();
+
+        nameTxt->SetValue(wxString(meeting->GetName()));
+        linkTxt->SetValue(wxString(meeting->GetLink()));
+        if (meeting->GetContact() != "")
+            contactName->SetLabel(wxString(meeting->GetContact()));
+
+        int *times = meeting->GetMeetingTime()->GetTimes();
+        meetingTimeEntries[0]->SetValue(wxString(std::to_string(times[0])));
+        meetingTimeEntries[1]->SetValue(wxString(std::to_string(times[1])));
+        meetingTimeEntries[2]->SetValue(wxString(std::to_string(times[2])));
+        meetingTimeEntries[3]->SetValue(wxString(std::to_string(times[3])));
+
+        if (!meeting->GetMeetingTime()->IsStartAM())
+        {
+            meetingAM_PM[0]->SetValue(false);
+            meetingAM_PM[1]->SetValue(true);
+        }
+        if (!meeting->GetMeetingTime()->IsEndAM())
+        {
+            meetingAM_PM[2]->SetValue(false);
+            meetingAM_PM[3]->SetValue(true);
+        }
+
+        int *firstDate = meeting->GetFirstDate();
+        if (meeting->IsRecurring())
+        {
+            recurringCheckBox->SetValue(true);
+
+            bool *days = meeting->GetRecurringDays();
+            for (int i = 0; i < 7; i++)
+            {
+                if (days[i])
+                    recurringDays[i]->SetValue(true);
+            }
+
+            int *secondDate = meeting->GetSecondDate();
+            for (int i = 0; i < 3; i++)
+            {
+                startDateEntries[i]->SetValue(wxString(std::to_string(firstDate[i])));
+                endDateEntries[i]->SetValue(wxString(std::to_string(secondDate[i])));
+            }
+
+            recurring = true;
+            topSizer->Show((size_t) 2);
+            topSizer->Hide((size_t) 4);
+            topSizer->Show((size_t) 5);
+            topSizer->Show((size_t) 6);
+            SetSize(wxDefaultCoord, wxDefaultCoord, 460, 485);
+            topSizer->Layout();
+        }
+        else
+        {
+            for (int i = 0; i < 3; i++)
+                singleDateEntries[i]->SetValue(wxString(std::to_string(firstDate[i])));
+        }
+
+        createButton->SetLabel("Save");
+    }
 }
 
 FrameType MV_Create::GetFrameType()
@@ -344,8 +409,13 @@ void MV_Create::OnCreate(wxCommandEvent& event)
                               meetingTime, date);
     }
 
-    UserData::AddMeeting(meeting);
-    //delete(meetingTime); // (this should be covered in the meeting destructor)
+    if (!isEdit)
+        UserData::AddMeeting(meeting);
+    else
+    {
+        meeting->SetID(meetingID);
+        UserData::UpdateMeeting(meeting);
+    }
     delete(meeting);
 
     Close(true);
