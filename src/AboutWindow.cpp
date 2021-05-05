@@ -12,7 +12,6 @@ AboutWindow::AboutWindow(const int id, const wxPoint& pos, DailyHub* _hub)
 {
     hub = _hub;
 
-    // Build window here
     wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
     topSizer->Add(new wxStaticText(this, 0, "The Daily Hub is a Linux-based desktop app designed to help you navigate your day online.\n"), wxSizerFlags(0).Border(wxLEFT | wxUP, 15));
     

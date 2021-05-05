@@ -1,6 +1,7 @@
 // TempHomeFrame.cpp
 // MS: 3/14/21 - initial code
 // MS: 5/4/21 - added intro/credits screen
+// MS: 5/5/21 - added settings screen
 
 // This is just a temporary home screen that can open the others, meant to be
 // replaced and expanded at a later date.
@@ -14,6 +15,7 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, const wxSize& siz
 
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(wxID_ABOUT, "&About");
+    menuFile->Append(wxID_PROPERTIES, "&Settings");
     menuFile->Append(ID_CloseFrame, "&Close window");
     menuFile->Append(wxID_EXIT, "&Quit");
 
@@ -47,6 +49,11 @@ void TempHomeFrame::OnOpenAbout(wxCommandEvent& event)
     hub->OpenUniqueFrame(FrameType::About);
 }
 
+void TempHomeFrame::OnOpenSettings(wxCommandEvent& event)
+{
+    hub->OpenUniqueFrame(FrameType::Settings);
+}
+
 // This is called when the menu option to close the window is selected
 void TempHomeFrame::OnExit(wxCommandEvent& event)
 {
@@ -72,6 +79,7 @@ wxBEGIN_EVENT_TABLE(TempHomeFrame, wxFrame)
     EVT_MENU(ID_OpenMVHead, TempHomeFrame::OnOpenMVHead)
     EVT_MENU(ID_OpenCVHead, TempHomeFrame::OnOpenCVHead)
     EVT_MENU(wxID_ABOUT, TempHomeFrame::OnOpenAbout)
+    EVT_MENU(wxID_PROPERTIES, TempHomeFrame::OnOpenSettings)
     EVT_MENU(ID_CloseFrame,  TempHomeFrame::OnExit)
     EVT_MENU(wxID_EXIT, TempHomeFrame::OnQuit)
     EVT_CLOSE(TempHomeFrame::OnClosed)

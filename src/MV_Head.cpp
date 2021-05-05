@@ -1,7 +1,7 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 5/4/21
+// Last edited on 5/5/21
 
 #include "MV_Head.h"
 #include "UserData.h"
@@ -43,7 +43,7 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, DailyHub *_hub)
     // Start by storing a copy of all of the currently scheduled meetings
     meetings = UserData::GetMeetings();
     // Create the wxListCtrl that will display the meeting information and allow one to be selected
-    meetingsList = new wxListCtrl(this, 0, wxDefaultPosition, wxSize(400, 200), wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VRULES);
+    meetingsList = new wxListCtrl(this, 0, wxDefaultPosition, wxSize(510, 250), wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VRULES);
     // Add the columns
     meetingsList->AppendColumn("Name:");
     meetingsList->SetColumnWidth(0, 175);
@@ -66,7 +66,7 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, DailyHub *_hub)
     buttonSizer->Add(new wxButton(this, ID_OpenMVView, "Open"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 10));
 
-    SetSizer(topSizer);
+    SetSizerAndFit(topSizer);
 }
 
 FrameType MV_Head::GetFrameType()
