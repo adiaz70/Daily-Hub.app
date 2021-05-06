@@ -12,6 +12,7 @@
 // MS: 5/4/21 - added static variable to track the last time that the database was accessed
 
 #include "UserData.h"
+#include "Settings.h"
 #include "MeetingTime.h"
 #include <string>
 #include <stdio.h>
@@ -600,11 +601,13 @@ void UserData::CreateDatabase(bool populate)
 // This is abstracted away so that any error-handling or specifics of finding the right filepath to the database
 // doesn't need to be repeated. This method might never become very long, but in case it does, I'm starting with
 // it already abstracted away.
-void UserData::OpenDatabase(sqlite3 **database, std::string name)
+void UserData::OpenDatabase(sqlite3 **database)
 {
     lastAccessTime = time(0);
 
-    if (sqlite3_open(name.c_str(), database) != 0)
+    std::string path = Settings::GetDatabasePath() + "user_data.db";
+
+    if (sqlite3_open(path.c_str(), database) != 0)
         printf("An error occurred opening the database: %s\n", sqlite3_errmsg(*database));
 }
 

@@ -47,7 +47,7 @@ private:
     static int IDCallback(void *data, int argc, char **argv, char **colName);
     static int NotesCallback(void *data, int argc, char **argv, char **colName);
     static void CreateDatabase(bool populate = false);
-    static void OpenDatabase(sqlite3 **database, std::string name = "user_data.db");
+    static void OpenDatabase(sqlite3 **database);
     static void SanitizeString(std::string *text, std::string escapeSequence = "\'");
     static std::string FormatDateString(int *date);
     static void PrintMeetingInfo(Meeting *meeting);
