@@ -8,6 +8,7 @@
 #include "DailyHub.h"
 #include "HubFrame.h"
 #include "enum_FrameType"
+#include "enum_EventID"
 
 class SettingsWindow: public HubFrame
 {
@@ -16,8 +17,10 @@ public:
     FrameType GetFrameType();
 
 private:
+    void OnChangeFilepath(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     DailyHub* hub;
+    wxStaticText *filepath;
 
     wxDECLARE_EVENT_TABLE();
 };

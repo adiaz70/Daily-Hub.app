@@ -2,6 +2,7 @@
 // MS: 5/5/21 - initial code
 
 #include "Settings.h"
+#include "UserData.h"
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -12,7 +13,31 @@
 
 std::string Settings::GetDatabasePath() { return databasePath; }
 
-void Settings::SetDatabasePath(std::string path) { databasePath = path; }
+void Settings::SetDatabasePath(std::string path)
+{
+    // Update the filepath
+    databasePath = path;
+    // And make sure that it ends in a forward slash
+    if (databasePath[databasePath.length() - 1] != '/')
+        databasePath += "/";
+
+    // Then update the information in the database by first opening it
+    sqlite3 *database;
+    path = databasePath + "user_data.db";
+    // Print an error if there is a problem opening it
+    if (sqlite3_open(path.c_str(), &database) != 0)
+    {
+        printf("An error occurred opening the database: %s\n", sqlite3_errmsg(database));
+        return;
+    }
+    // And then update its contents
+    std::string sql = "UPDATE SETTINGS SET DatabasePath = '" + databasePath + "';";
+    sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
+    sqlite3_close(database);
+
+    // Finally, alert the database that it needs to refresh because it might have totally different contents, now
+    UserData::RefreshDatabase();
+}
 
 //***************************
 // Private member functions *

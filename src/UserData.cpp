@@ -390,6 +390,14 @@ void UserData::SaveNotes(int meetingID, std::string notes)
 // Database operations *
 //**********************
 
+// MS: 5/5/21 - added function
+// Indicate that the database might have changed in some way at this time so that anything relying on
+// up-to-date information will know to refresh.
+void UserData::RefreshDatabase()
+{
+    lastAccessTime = time(0);
+}
+
 void UserData::ResetDatabase(bool populate)
 {
     sqlite3 *database;

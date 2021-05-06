@@ -37,6 +37,7 @@ public:
     static void SaveNotes(int meetingID, std::string notes);
 
     // Database stuff
+    static void RefreshDatabase();
     static void ResetDatabase(bool populate = false);
 
 private:
