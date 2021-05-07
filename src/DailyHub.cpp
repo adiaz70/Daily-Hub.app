@@ -6,6 +6,7 @@
 // MS: 5/5/21 - incorporated new frame, SettingsWindow
 
 #include "DailyHub.h"
+#include "Settings.h"
 #include "TempHomeFrame.h"
 #include "MV_Head.h"
 #include "MV_Create.h"
@@ -21,8 +22,11 @@
 // Public member functions  *
 //***************************
 
+// MS: 5/6/21 - now also initializes Settings
 bool DailyHub::OnInit()
 {
+    Settings::Init();
+
     OpenUniqueFrame(FrameType::TempHome);
 
     return true;

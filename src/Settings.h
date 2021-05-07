@@ -15,6 +15,9 @@ public:
 
     // Setters
     static void SetDatabasePath(std::string path);
+    static void ResetDatabasePath();
+
+    static void Init();
 
 private:
     Settings() { }

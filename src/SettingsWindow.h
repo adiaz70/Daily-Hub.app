@@ -18,6 +18,7 @@ public:
 
 private:
     void OnChangeFilepath(wxCommandEvent& event);
+    void OnResetFilepath(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     DailyHub* hub;
     wxStaticText *filepath;

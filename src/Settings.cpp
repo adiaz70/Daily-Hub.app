@@ -1,5 +1,6 @@
 // Settings.cpp
 // MS: 5/5/21 - initial code
+// MS: 5/6/21 - some bug fixes/improvements
 
 #include "Settings.h"
 #include "UserData.h"
@@ -21,9 +22,9 @@ void Settings::SetDatabasePath(std::string path)
     if (databasePath[databasePath.length() - 1] != '/')
         databasePath += "/";
 
-    // Then update the information in the database by first opening it
+    // Then update the information in the settings database by first opening it
     sqlite3 *database;
-    path = databasePath + "user_data.db";
+    path = settingsPath + "user_data.db";
     // Print an error if there is a problem opening it
     if (sqlite3_open(path.c_str(), &database) != 0)
     {
@@ -38,6 +39,10 @@ void Settings::SetDatabasePath(std::string path)
     // Finally, alert the database that it needs to refresh because it might have totally different contents, now
     UserData::RefreshDatabase();
 }
+
+void Settings::ResetDatabasePath() { SetDatabasePath(settingsPath); }
+
+void Settings::Init() { databasePath = Settings::FetchDatabasePath(); }
 
 //***************************
 // Private member functions *
@@ -102,5 +107,5 @@ std::string Settings::GetUserName()
 // 'settingsPath' is where there should *always* be a database with *at least* the filepath to the actual database
 std::string const Settings::settingsPath = "/home/" + Settings::GetUserName() + "/.dailyhub/";
 // 'databasePath' is the filepath to the actual database that equals 'settingsPath' by default but can be changed by the user.
-// This is automatically fetched at the start of the program
-std::string Settings::databasePath = Settings::FetchDatabasePath();
+// This is set when DailyHub::OnInit() executes and calls Settings::Init()
+std::string Settings::databasePath = "";
