@@ -5,6 +5,7 @@
 // MS: 4/7/21 - added ID_MainButton (ambiguous wording so it can be reused)
 // MS: 4/10/21 - added ID_ToggleButton (ambiguous wording so it can be reused)
 // MS: 4/12/21 - added ID_OpenMVView
+// MS: 5/10/21 - added SecondaryButton
 
 #ifndef ENUM_EVENT_ID
 #define ENUM_EVENT_ID
@@ -19,9 +20,10 @@ enum
     ID_ToggleCheckBox = 6,
     ID_ToggleButton = 7,
     ID_MainButton = 8,
-    ID_OpenCalViewHead=9,
-    ID_OpenMVView = 10,
-    ID_OpenCreateContact = 11
+    ID_SecondaryButton = 9,
+    ID_OpenCalViewHead=10,
+    ID_OpenMVView = 11,
+    ID_OpenCreateContact = 12
 };
 
 #endif

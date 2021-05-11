@@ -44,7 +44,7 @@ MV_Create::MV_Create(const int id, const wxPoint& pos, DailyHub* _hub, Meeting* 
 
     // Add two labels and a button for choosing the contact for this meeting
     wxBoxSizer *contactSizer = new wxBoxSizer(wxHORIZONTAL);
-    dataSizer->Add(new wxStaticText(this, 0, "Contact (Optional):", wxDefaultPosition, wxDefaultSize), labelFlags);
+    dataSizer->Add(new wxStaticText(this, 0, "Contact:", wxDefaultPosition, wxDefaultSize), labelFlags);
     contactName = new wxStaticText(this, 0, "none", wxDefaultPosition, wxDefaultSize);
     wxFont font = contactName->GetFont();
     font.MakeItalic();
