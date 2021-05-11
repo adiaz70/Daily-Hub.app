@@ -36,7 +36,8 @@ private:
     wxStaticText *meetingDate;
     wxTextCtrl *notes;
     int *currentDate;
-    int dateShift[7];
+    int shiftForwardTable[7];
+    int shiftBackwardTable[7];
 
     wxDECLARE_EVENT_TABLE();
 };

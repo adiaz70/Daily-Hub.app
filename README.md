@@ -26,7 +26,7 @@ sudo ln -sv [name of wx header directory]/wx wx
 
 ## Installing SQLite3
 
-Download `sqlite-autoconf-3350400.tar.gz` on the page: https://www.sqlite.org/download.html
+Download `sqlite-autoconf-[version].tar.gz` on the page: https://www.sqlite.org/download.html
 
 Extract the contents somewhere on the computer, such as the desktop, and open the directory in the terminal. Execute the following commands:
 ```

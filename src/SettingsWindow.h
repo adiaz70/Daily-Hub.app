@@ -1,5 +1,6 @@
 // SettingsWindow.h
 // MS: 5/5/21 - initial code
+// MS: 5/11/21 - made topSizer a private member variable for later access
 
 #ifndef SETTINGS_WINDOW
 #define SETTINGS_WINDOW
@@ -21,6 +22,7 @@ private:
     void OnResetFilepath(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     DailyHub* hub;
+    wxBoxSizer *topSizer;
     wxStaticText *filepath;
 
     wxDECLARE_EVENT_TABLE();

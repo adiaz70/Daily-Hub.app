@@ -1,6 +1,7 @@
 // SettingsWindow.cpp
 // MS: 5/5/21 - initial code
 // MS: 5/6/21 - added reset button
+// MS: 5/11/21 - sizers readjust after filepath changes
 
 #include "SettingsWindow.h"
 #include "Settings.h"
@@ -14,7 +15,7 @@ SettingsWindow::SettingsWindow(const int id, const wxPoint& pos, DailyHub* _hub)
 {
     hub = _hub;
 
-    wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+    topSizer = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer *pathSizer = new wxBoxSizer(wxHORIZONTAL);
     pathSizer->Add(new wxStaticText(this, 0, "Database Filepath:"), wxSizerFlags(0).Center().Border());
@@ -51,12 +52,16 @@ void SettingsWindow::OnChangeFilepath(wxCommandEvent& event)
         Settings::SetDatabasePath(directoryDialog->GetPath().ToStdString());
         filepath->SetLabel(Settings::GetDatabasePath());
     }
+
+    topSizer->Layout();
 }
 
 void SettingsWindow::OnResetFilepath(wxCommandEvent& event)
 {
     Settings::ResetDatabasePath();
     filepath->SetLabel(Settings::GetDatabasePath());
+
+    topSizer->Layout();
 }
 
 // This is called by "Close(true)" and when the frame closes for literally any other reason

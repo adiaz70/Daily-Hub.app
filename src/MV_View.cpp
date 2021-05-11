@@ -34,6 +34,38 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
     menuBar->Append(fileMenu, "&File");
     SetMenuBar(menuBar);
 
+    // First of all, if this is a recurring meeting, build shift tables so that each day of the week has a value for how far
+    // in the future/past the next/previous instance of the meeting is
+    if (meeting->IsRecurring())
+    {
+        // Initialize both shift tables to have a default value of 7 (skips one week in the future/past)
+        for (int i = 0; i < 7; i++)
+        {
+            shiftForwardTable[i] = 7;
+            shiftBackwardTable[i] = 7;
+        }
+
+        bool *recurringDays = meeting->GetRecurringDays();
+        for (int i = 0; i < 7; i++)
+        {
+            // Look through all of the remaining days of the week (looping around to the start of the week as needed)
+            // (Note: we don't want to only check days that are scheduled because we want to be able to get back on track)
+            for (int j = 1; j < 6; j++)
+            {
+                // And check if it is another day that the meeting is set to occur on
+                if (recurringDays[(i + j) % 7])
+                {
+                    // If one is found, set the forward shift for this day to equal the difference between them
+                    shiftForwardTable[i] = j;
+                    // Then set the backward shift for the other day to equal the difference between them, too
+                    shiftBackwardTable[(i + j) % 7] = j;
+                    // And finally break this inner loop to go on and check the next day
+                    break;
+                }
+            }
+        }
+    }
+
     wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
 
     wxFlexGridSizer *infoSizer = new wxFlexGridSizer(4, 2, 15, 0);
@@ -115,6 +147,14 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
     currentDate[0] = firstDate[0];
     currentDate[1] = firstDate[1];
     currentDate[2] = firstDate[2];
+    // Make sure that a meeting actually takes place on this day and that it's not just the start of the range
+    // (if so, shift forward to the first actuall occurence)
+    if (!meeting->GetRecurringDays()[Date::DayOfWeek(currentDate)])
+    {
+        int *newDate = Date::ShiftDate(currentDate, shiftForwardTable[Date::DayOfWeek(currentDate)]);
+        free(currentDate);
+        currentDate = newDate;
+    }
     formattedDate = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
     meetingDate = new wxStaticText(this, 0, wxString(formattedDate));
     selectedDateSizer->Add(meetingDate, wxSizerFlags(0).Border(wxLEFT, 15));
@@ -136,36 +176,6 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
     topSizer->Add(notes, wxSizerFlags(1).Border(wxALL, 15).Expand());
 
     SetSizerAndFit(topSizer);
-
-    // Finally, if this is a recurring meeting, build a shift table for the date based on which days of the week it needs to occur
-    bool *recurringDays = meeting->GetRecurringDays();
-    for (int i = 0; i < 7; i++)
-    {
-        // If this day of the week is not one that the meeting is meant to recur on, then there is no shift
-        if (!recurringDays[i])
-            dateShift[i] = 0;
-        // If this *is* a day of the week that the meeting is meant to recur
-        else
-        {
-            // Set the shift to a full week to start with
-            dateShift[i] = 7;
-            // Then, look through all of the remaining days of the week (looping around to the start of the week as needed)
-            for (int j = 1; j < 6; j++)
-            {
-                // And check if for another day that the meeting is set to occur on
-                if (recurringDays[(i + j) % 7])
-                {
-                    // If one is found, set the shift to equal the difference between them and break the loop
-                    dateShift[i] = j;
-                    break;
-                }
-            }
-        }
-    }
-
-    //****************************************************************************************************
-    // To-do: make sure that this current date is on one of the days actually designated for the meeting *
-    //****************************************************************************************************
 }
 
 FrameType MV_View::GetFrameType()
@@ -189,12 +199,21 @@ void MV_View::OnOpenMVHead(wxCommandEvent& event)
 
 void MV_View::OnPreviousMeeting(wxCommandEvent& event)
 {
-    // Need to have another table for backward shift...
+    int *newDate = Date::ShiftDate(currentDate, -shiftBackwardTable[Date::DayOfWeek(currentDate)]);
+    free(currentDate);
+    currentDate = newDate;
+
+    //***************************************************************************
+    // To-do: check that this new date does not exceed the meeting's date range *
+    //***************************************************************************
+
+    std::string dateString = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
+    meetingDate->SetLabel(wxString(dateString));
 }
 
 void MV_View::OnNextMeeting(wxCommandEvent& event)
 {
-    int *newDate = Date::ShiftDate(currentDate, dateShift[Date::DayOfWeek(currentDate)]);
+    int *newDate = Date::ShiftDate(currentDate, shiftForwardTable[Date::DayOfWeek(currentDate)]);
     free(currentDate);
     currentDate = newDate;
 
