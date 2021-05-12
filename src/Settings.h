@@ -1,5 +1,6 @@
 // Settings.h
 // MS: 5/5/21 - initial code
+// MS: 5/12/21 - settingsPath is no longer constant
 
 #ifndef SETTINGS_H
 #define SETTINGS
@@ -25,7 +26,7 @@ private:
     static int PathCallback(void *data, int argc, char **argv, char **colName);
     static std::string GetUserName();
 
-    static const std::string settingsPath;
+    static std::string settingsPath;
     static std::string databasePath;
 };
 

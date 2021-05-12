@@ -1,6 +1,7 @@
 // Settings.cpp
 // MS: 5/5/21 - initial code
 // MS: 5/6/21 - some bug fixes/improvements
+// MS: 5/12/21 - attempted to improve runtime safety
 
 #include "Settings.h"
 #include "UserData.h"
@@ -42,7 +43,16 @@ void Settings::SetDatabasePath(std::string path)
 
 void Settings::ResetDatabasePath() { SetDatabasePath(settingsPath); }
 
-void Settings::Init() { databasePath = Settings::FetchDatabasePath(); }
+void Settings::Init()
+{
+    std::string userName = Settings::GetUserName();
+    if (userName.length() != 0)
+        settingsPath = "/home/" + userName + "/.dailyhub/";
+    else
+        settingsPath = ".dailyhub/";
+
+    databasePath = Settings::FetchDatabasePath();
+}
 
 //***************************
 // Private member functions *
@@ -99,13 +109,19 @@ int Settings::PathCallback(void *data, int argc, char **argv, char **colName)
 
 std::string Settings::GetUserName()
 {
-    char *userName;
-    cuserid(userName);
-    return userName;
+    char *userName = cuserid(nullptr);
+
+    if (userName == nullptr)
+        return "";
+    else
+    {
+        std::string name = userName;
+        return name;
+    }
 }
 
 // 'settingsPath' is where there should *always* be a database with *at least* the filepath to the actual database
-std::string const Settings::settingsPath = "/home/" + Settings::GetUserName() + "/.dailyhub/";
+std::string Settings::settingsPath = "";
 // 'databasePath' is the filepath to the actual database that equals 'settingsPath' by default but can be changed by the user.
 // This is set when DailyHub::OnInit() executes and calls Settings::Init()
 std::string Settings::databasePath = "";
