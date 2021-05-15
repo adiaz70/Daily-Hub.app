@@ -25,7 +25,7 @@ public:
     static std::vector<Meeting *> GetMeetings(int date[3], bool print = false);
     static std::vector<Meeting *> GetMeetings(int startDate[3], int endDate[3], bool print = false);
     static std::vector<std::string> GetContacts(bool print = false);
-    static std::string GetNotes(int meetingID);
+    static std::string GetNotes(int meetingID, int *meetingDate);
     static time_t GetLastAccessTime();
 
     // Setters
@@ -34,7 +34,7 @@ public:
     static void UpdateMeeting(Meeting *meeting);
     static void DeleteMeeting(Meeting *meeting);
     static void AddContact(std::string contact);
-    static void SaveNotes(int meetingID, std::string notes);
+    static void SaveNotes(int meetingID, int *meetingDate, std::string notes);
 
     // Database stuff
     static void RefreshDatabase();

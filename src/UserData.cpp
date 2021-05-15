@@ -10,6 +10,7 @@
 // MS: 5/1/21 - changed SQL commands to ignore case when sorting alphabetically
 // MS: 5/4/21 - abstracted formatting a string for the date into a new function
 // MS: 5/4/21 - added static variable to track the last time that the database was accessed
+// MS: 5/15/21 - create separate notes in the database for every unique instance of a meeting
 
 #include "UserData.h"
 #include "Settings.h"
@@ -204,14 +205,32 @@ std::vector<std::string> UserData::GetContacts(bool print)
     return contacts;
 }
 
-std::string UserData::GetNotes(int meetingID)
+std::string UserData::GetNotes(int meetingID, int *meetingDate)
 {
     sqlite3 *database;
     OpenDatabase(&database);
 
-    std::string sql = "SELECT ID, Notes FROM NOTES WHERE ID = " + std::to_string(meetingID) + ";";
+    std::string sql = "SELECT Notes FROM NOTES WHERE ID = " + std::to_string(meetingID);
+    sql += " AND Date = '" + FormatDateString(meetingDate) + "';";
+
+    std::string *notesPtr = nullptr;
+    sqlite3_exec(database, sql.c_str(), NotesCallback, &notesPtr, NULL);
+
+    // If there wasn't an item in the database for notes for this particular instance of a meeting, create one
     std::string notes;
-    sqlite3_exec(database, sql.c_str(), NotesCallback, &notes, NULL);
+    if (notesPtr == nullptr)
+    {
+        sql = "INSERT INTO NOTES (ID, Date, Notes) VALUES (" + std::to_string(meetingID)
+            + ", '" + FormatDateString(meetingDate) + "', '');";
+        sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
+
+        notes = "";
+    }
+    else
+    {
+        notes = *notesPtr;
+        delete(notesPtr);
+    }
 
     sqlite3_close(database);
 
@@ -280,13 +299,6 @@ void UserData::AddMeeting(Meeting *meeting, sqlite3 *database)
 
     // Execute the command to add this meeting to the database
     int result = sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
-
-    // If the command executed successfully, insert a corresponding string into the NOTES table for later use
-    if (result == 0)
-    {
-        sql = "INSERT INTO NOTES (ID, Notes) VALUES (" + std::to_string(maxID + 1) + ", '');";
-        sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
-    }
 
     if (close)
         sqlite3_close(database);
@@ -375,13 +387,14 @@ void UserData::AddContact(std::string contact)
     sqlite3_close(database);
 }
 
-void UserData::SaveNotes(int meetingID, std::string notes)
+void UserData::SaveNotes(int meetingID, int *meetingDate, std::string notes)
 {
     SanitizeString(&notes);
 
     sqlite3 *database;
     OpenDatabase(&database);
-    std::string sql = "UPDATE NOTES SET Notes = '" + notes + "' WHERE ID = " + std::to_string(meetingID) + ";";
+    std::string sql = "UPDATE NOTES SET Notes = '" + notes + "' WHERE ID = " + std::to_string(meetingID)
+                    + " AND Date = '" + FormatDateString(meetingDate) + "';";
     sqlite3_exec(database, sql.c_str(), Callback, NULL, NULL);
     sqlite3_close(database);
 }
@@ -547,11 +560,12 @@ int UserData::IDCallback(void *data, int argc, char **argv, char **colName)
     return 0;
 }
 
-// This function expects 'data' to be a pointer to a string
+// This function expects 'data' to be a pointer to a pointer to a string
 int UserData::NotesCallback(void *data, int argc, char **argv, char **colName)
 {
-    std::string *notes = (std::string *) data;
-    *notes = argv[1] ? argv[1] : "";
+    std::string **notes = (std::string **) data;
+    *notes = new std::string();
+    **notes = argv[0];
 
     return 0;
 }
@@ -595,7 +609,7 @@ void UserData::CreateDatabase(bool populate)
     
     sqlite3_exec(database, "CREATE TABLE CONTACTS (Name TEXT PRIMARY KEY);", Callback, NULL, NULL);
 
-    sqlite3_exec(database, "CREATE TABLE NOTES (ID INTEGER PRIMARY KEY, Notes TEXT);", Callback, NULL, NULL);
+    sqlite3_exec(database, "CREATE TABLE NOTES (ID INTEGER, Date TEXT, Notes TEXT);", Callback, NULL, NULL);
 
     // Add some test data to the database if desired
     // MS: 5/4/21 - changed sample data to be more realistic/detailed

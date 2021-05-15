@@ -1,7 +1,7 @@
 // MV_View.cpp -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 5/14/21
+// Last edited on 5/15/21
 
 #include "MV_View.h"
 #include "wx/hyperlink.h"
@@ -189,7 +189,7 @@ MV_View::MV_View(Meeting *_meeting, const int id, const wxPoint& pos, DailyHub* 
 
     topSizer->Add(infoSizer, wxSizerFlags(0).Center());
 
-    notes = new wxTextCtrl(this, 0, UserData::GetNotes(meeting->GetID()), wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE);
+    notes = new wxTextCtrl(this, 0, UserData::GetNotes(meeting->GetID(), currentDate), wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE);
     topSizer->Add(notes, wxSizerFlags(1).Border(wxALL, 15).Expand());
 
     SetSizerAndFit(topSizer);
@@ -223,11 +223,17 @@ void MV_View::OnPreviousMeeting(wxCommandEvent& event)
     if (newDate[2] > earliestDate[2] || (newDate[2] == earliestDate[2] && newDate[0] > earliestDate[0]) ||
         (newDate[2] == earliestDate[2] && newDate[0] == earliestDate[0] && newDate[1] >= earliestDate[1]))
     {
+        // Save the notes taken in the database
+        UserData::SaveNotes(meeting->GetID(), currentDate, notes->GetValue().ToStdString());
+
         free(currentDate);
         currentDate = newDate;
 
         std::string dateString = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
         meetingDate->SetLabel(wxString(dateString));
+
+        // Get the notes for the next instance of the meeting from the database
+        notes->SetValue(UserData::GetNotes(meeting->GetID(), currentDate));
     }
     else
         free(newDate);
@@ -242,11 +248,17 @@ void MV_View::OnNextMeeting(wxCommandEvent& event)
     if (newDate[2] < latestDate[2] || (newDate[2] == latestDate[2] && newDate[0] < latestDate[0]) ||
         (newDate[2] == latestDate[2] && newDate[0] == latestDate[0] && newDate[1] <= latestDate[1]))
     {
+        // Save the notes taken in the database
+        UserData::SaveNotes(meeting->GetID(), currentDate, notes->GetValue().ToStdString());
+
         free(currentDate);
         currentDate = newDate;
 
         std::string dateString = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
         meetingDate->SetLabel(wxString(dateString));
+
+        // Get the notes for the next instance of the meeting from the database
+        notes->SetValue(UserData::GetNotes(meeting->GetID(), currentDate));
     }
     else
         free(newDate);
@@ -263,7 +275,7 @@ void MV_View::OnExit(wxCommandEvent& event)
 void MV_View::OnClosed(wxCloseEvent& event)
 {
     // Save the notes taken in the database
-    UserData::SaveNotes(meeting->GetID(), notes->GetValue().ToStdString());
+    UserData::SaveNotes(meeting->GetID(), currentDate, notes->GetValue().ToStdString());
 
     // Make sure the app has forgotten this frame before destroying it
     if (!forgotten)
