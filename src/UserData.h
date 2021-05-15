@@ -39,6 +39,7 @@ public:
     // Database stuff
     static void RefreshDatabase();
     static void ResetDatabase(bool populate = false);
+    static bool CheckDatabase();
 
 private:
     UserData(){}
@@ -47,8 +48,9 @@ private:
     static int ContactCallback(void *data, int argc, char **argv, char **colName);
     static int IDCallback(void *data, int argc, char **argv, char **colName);
     static int NotesCallback(void *data, int argc, char **argv, char **colName);
+    static int TrueFalseCallback(void *data, int argc, char **argv, char **colName);
     static void CreateDatabase(bool populate = false);
-    static void OpenDatabase(sqlite3 **database);
+    static bool OpenDatabase(sqlite3 **database);
     static void SanitizeString(std::string *text, std::string escapeSequence = "\'");
     static std::string FormatDateString(int *date);
     static void PrintMeetingInfo(Meeting *meeting);

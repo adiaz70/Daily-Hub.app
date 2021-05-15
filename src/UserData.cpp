@@ -398,15 +398,36 @@ void UserData::RefreshDatabase()
     lastAccessTime = time(0);
 }
 
+// MS: 5/14/21 - changed DROP TABLE commands to only execute if the database successfully opened
 void UserData::ResetDatabase(bool populate)
 {
     sqlite3 *database;
-    OpenDatabase(&database);
-    sqlite3_exec(database, "DROP TABLE MEETINGS;", Callback, NULL, NULL);
-    sqlite3_exec(database, "DROP TABLE CONTACTS;", Callback, NULL, NULL);
-    sqlite3_exec(database, "DROP TABLE NOTES;", Callback, NULL, NULL);
-    CreateDatabase(populate);
+    if (OpenDatabase(&database))
+    {
+        sqlite3_exec(database, "DROP TABLE MEETINGS;", Callback, NULL, NULL);
+        sqlite3_exec(database, "DROP TABLE CONTACTS;", Callback, NULL, NULL);
+        sqlite3_exec(database, "DROP TABLE NOTES;", Callback, NULL, NULL);
+    }
     sqlite3_close(database);
+
+    CreateDatabase(populate);
+}
+
+// MS: 5/14/21 - added function to create database tables if they don't already exist
+bool UserData::CheckDatabase()
+{
+    bool foundEntry = false;
+
+    sqlite3 *database;
+    OpenDatabase(&database);
+    sqlite3_exec(database, "SELECT name FROM sqlite_master WHERE TYPE = 'table' AND name != 'SETTINGS';", TrueFalseCallback, &foundEntry, NULL);
+    sqlite3_close(database);
+
+    // If no tables where found in the database, create them
+    if (!foundEntry)
+        CreateDatabase();
+
+    return foundEntry;
 }
 
 //****************************
@@ -535,6 +556,17 @@ int UserData::NotesCallback(void *data, int argc, char **argv, char **colName)
     return 0;
 }
 
+// This function expects 'data' to be a pointer to a bool that will be set to true if this function is called
+// (indicates the existence, or lack thereof, of items in the database)
+// MS: 5/14/21 - added function
+int UserData::TrueFalseCallback(void *data, int argc, char **argv, char **colName)
+{
+    bool *foundEntry = (bool *) data;
+    *foundEntry = true;
+
+    return 0;
+}
+
 void UserData::CreateDatabase(bool populate)
 {
     sqlite3 *database;
@@ -607,16 +639,21 @@ void UserData::CreateDatabase(bool populate)
 }
 
 // This is abstracted away so that any error-handling or specifics of finding the right filepath to the database
-// doesn't need to be repeated. This method might never become very long, but in case it does, I'm starting with
-// it already abstracted away.
-void UserData::OpenDatabase(sqlite3 **database)
+// doesn't need to be repeated.
+// MS: 5/14/21 - changed function to return a boolean value indicating whether the database opened without error
+bool UserData::OpenDatabase(sqlite3 **database)
 {
     lastAccessTime = time(0);
 
     std::string path = Settings::GetDatabasePath() + "user_data.db";
 
     if (sqlite3_open(path.c_str(), database) != 0)
+    {
         printf("An error occurred opening the database: %s\n", sqlite3_errmsg(*database));
+        return false;
+    }
+
+    return true;
 }
 
 void UserData::SanitizeString(std::string *text, std::string escapeSequence)

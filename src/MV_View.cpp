@@ -1,7 +1,7 @@
 // MV_View.cpp -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 5/11/21
+// Last edited on 5/14/21
 
 #include "MV_View.h"
 #include "wx/hyperlink.h"
@@ -130,10 +130,13 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
 
     // Add all of the relevant info for date of this current meeting (if one-time, it's just the scheduled date)
     // (if a recurring meeting, it could be any instance of the meeting).
+    int labelBorder = 0;
     wxBoxSizer *selectedDateSizer = new wxBoxSizer(wxHORIZONTAL);
     // If the meeting is recurring, it needs buttons on either side of the label to change the current one to the next or previous instance
     if (meeting->IsRecurring())
     {
+        labelBorder = 15;
+
         wxButton *previousButton = new wxButton(this, ID_MainButton, "Previous", wxDefaultPosition, wxSize(60, 25), wxBU_EXACTFIT);
         wxFont font = previousButton->GetFont();
         font.MakeSmaller();
@@ -148,8 +151,8 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
     currentDate[1] = firstDate[1];
     currentDate[2] = firstDate[2];
     // Make sure that a meeting actually takes place on this day and that it's not just the start of the range
-    // (if so, shift forward to the first actuall occurence)
-    if (!meeting->GetRecurringDays()[Date::DayOfWeek(currentDate)])
+    // (if so, shift forward to the first actual occurence)
+    if (meeting->IsRecurring() && !meeting->GetRecurringDays()[Date::DayOfWeek(currentDate)])
     {
         int *newDate = Date::ShiftDate(currentDate, shiftForwardTable[Date::DayOfWeek(currentDate)]);
         free(currentDate);
@@ -157,7 +160,7 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
     }
     formattedDate = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
     meetingDate = new wxStaticText(this, 0, wxString(formattedDate));
-    selectedDateSizer->Add(meetingDate, wxSizerFlags(0).Border(wxLEFT, 15));
+    selectedDateSizer->Add(meetingDate, wxSizerFlags(0).Border(wxLEFT, labelBorder));
     // Then add the second button on the other side of the label
     if (meeting->IsRecurring())
     {
