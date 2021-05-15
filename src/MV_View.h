@@ -1,7 +1,7 @@
 // MV_View.h -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 5/11/21
+// Last edited on 5/14/21
 
 #ifndef MV_VIEW_H
 #define MV_VIEW_H
@@ -32,7 +32,7 @@ private:
     void OnQuit(wxCommandEvent& event);
 
     DailyHub *hub;
-    int meetingID;
+    Meeting *meeting;
     wxStaticText *meetingDate;
     wxTextCtrl *notes;
     int *currentDate;
