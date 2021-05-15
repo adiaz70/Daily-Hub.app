@@ -16,7 +16,7 @@
 class TempHomeFrame: public HubFrame
 {
 public:
-    TempHomeFrame(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub);
+    TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub);
     FrameType GetFrameType();
 
 private:

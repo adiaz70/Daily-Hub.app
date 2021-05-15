@@ -2,14 +2,15 @@
 // MS: 3/14/21 - initial code
 // MS: 5/4/21 - added intro/credits screen
 // MS: 5/5/21 - added settings screen
+// MS: 5/15/21 - added text describing each main window and buttons to open them
 
 // This is just a temporary home screen that can open the others, meant to be
 // replaced and expanded at a later date.
 
 #include "TempHomeFrame.h"
 
-TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub)
-        : HubFrame("Daily Hub - Home", id, pos, size)
+TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub)
+        : HubFrame("Daily Hub - Home", id, pos, wxSize(500, 450), false)
 {
     hub = _hub;
 
@@ -27,6 +28,37 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, const wxSize& siz
     menuBar->Append(menuFile, "&File");
     menuBar->Append(menuWindow, "&Windows");
     SetMenuBar( menuBar );
+
+    wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+    wxFont font;
+
+    topSizer->Add(10, 15);
+
+    wxStaticText *calLabel = new wxStaticText(this, 0, "Calendar View:");
+    font = calLabel->GetFont();
+    font.MakeBold();
+    calLabel->SetFont(font);
+    topSizer->Add(calLabel, wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxStaticText(this, 0, "View your scheduled meetings in a weekly calendar format."), wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxButton(this, 0, "Open"), wxSizerFlags(0).Center().Border());
+
+    topSizer->Add(10, 20);
+
+    wxStaticText *mLabel = new wxStaticText(this, 0, "Meeting View:");
+    mLabel->SetFont(font);
+    topSizer->Add(mLabel, wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxStaticText(this, 0, "View, manage, and create new meetings in a list format."), wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxButton(this, ID_OpenMVHead, "Open"), wxSizerFlags(0).Center().Border());
+
+    topSizer->Add(10, 20);
+
+    wxStaticText *conLabel = new wxStaticText(this, 0, "Contact View:");
+    conLabel->SetFont(font);
+    topSizer->Add(conLabel, wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxStaticText(this, 0, "Manage the list of contacts that can be assigned to meetings."), wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxButton(this, ID_OpenCVHead, "Open"), wxSizerFlags(0).Center().Border());
+
+    SetSizer(topSizer);
 }
 
 FrameType TempHomeFrame::GetFrameType()
@@ -82,5 +114,7 @@ wxBEGIN_EVENT_TABLE(TempHomeFrame, wxFrame)
     EVT_MENU(wxID_PROPERTIES, TempHomeFrame::OnOpenSettings)
     EVT_MENU(ID_CloseFrame,  TempHomeFrame::OnExit)
     EVT_MENU(wxID_EXIT, TempHomeFrame::OnQuit)
+    EVT_BUTTON(ID_OpenMVHead, TempHomeFrame::OnOpenMVHead)
+    EVT_BUTTON(ID_OpenCVHead, TempHomeFrame::OnOpenCVHead)
     EVT_CLOSE(TempHomeFrame::OnClosed)
 wxEND_EVENT_TABLE()

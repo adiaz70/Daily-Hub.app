@@ -62,7 +62,7 @@ void DailyHub::OpenFrame(FrameType id, void *data)
 {
     switch (id)
     {
-        case FrameType::TempHome: frames.push_back(new TempHomeFrame(NewFrameID(), wxPoint(50, 50), wxSize(550, 440), this)); break;
+        case FrameType::TempHome: frames.push_back(new TempHomeFrame(NewFrameID(), wxPoint(50, 50), this)); break;
         case FrameType::MVHead: frames.push_back(new MV_Head(NewFrameID(), wxPoint(50, 50), this)); break;
         case FrameType::MVCreate:
             if (data == nullptr)
