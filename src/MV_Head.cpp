@@ -1,7 +1,7 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 5/14/21
+// Last edited on 5/15/21
 
 #include "MV_Head.h"
 #include "UserData.h"
@@ -57,7 +57,10 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, DailyHub *_hub)
     buttonSizer->Add(new wxButton(this, wxID_DELETE, "Delete"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     buttonSizer->Add(new wxButton(this, wxID_EDIT, "Edit"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     buttonSizer->Add(new wxButton(this, ID_OpenMVView, "Open"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
-    topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 10));
+    buttonSizer->Add(new wxButton(this, ID_OpenMVCreate, "New"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
+    topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 5));
+
+    topSizer->Add(5, 10);
 
     SetSizerAndFit(topSizer);
 }
@@ -226,6 +229,7 @@ wxBEGIN_EVENT_TABLE(MV_Head, wxFrame)
     EVT_MENU(wxID_EXIT, MV_Head::OnQuit)
     EVT_LIST_ITEM_ACTIVATED(wxID_ANY, MV_Head::OnDoubleClick)
     EVT_BUTTON(ID_OpenMVView, MV_Head::OnOpenMeeting)
+    EVT_BUTTON(ID_OpenMVCreate, MV_Head::OnCreate)
     EVT_BUTTON(wxID_EDIT, MV_Head::OnEdit)
     EVT_BUTTON(wxID_DELETE, MV_Head::OnDelete)
     EVT_ACTIVATE(MV_Head::OnActivate)

@@ -4,6 +4,7 @@
 // MS: 4/12/21 - incorporated new frame, MV_View
 // MS: 5/4/21 - incorporated new frame, AboutWindow
 // MS: 5/5/21 - incorporated new frame, SettingsWindow
+// MS: 5/15/21 - incorporated new frame, HelpWindow
 
 #include "DailyHub.h"
 #include "Settings.h"
@@ -13,6 +14,7 @@
 #include "MV_View.h"
 #include "CV_Head.h"
 #include "AboutWindow.h"
+#include "HelpWindow.h"
 #include "SettingsWindow.h"
 #include "Create_Contact.h"
 #include "Meeting.h"
@@ -75,6 +77,7 @@ void DailyHub::OpenFrame(FrameType id, void *data)
         case FrameType::MVView: frames.push_back(new MV_View((Meeting *) data, NewFrameID(), wxPoint(50, 50), this)); break;
         case FrameType::About: frames.push_back(new AboutWindow(NewFrameID(), wxPoint(50, 50), this)); break;
         case FrameType::Settings: frames.push_back(new SettingsWindow(NewFrameID(), wxPoint(50, 50), this)); break;
+        case FrameType::Help: frames.push_back(new HelpWindow(NewFrameID(), wxPoint(50, 50), this)); break;
         default: return;
     }
 

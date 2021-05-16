@@ -3,6 +3,7 @@
 // MS: 5/4/21 - added intro/credits screen
 // MS: 5/5/21 - added settings screen
 // MS: 5/15/21 - added text describing each main window and buttons to open them
+// MS: 5/15/21 - added help screen
 
 // This is just a temporary home screen that can open the others, meant to be
 // replaced and expanded at a later date.
@@ -17,7 +18,8 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub)
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(wxID_ABOUT, "&About");
     menuFile->Append(wxID_PROPERTIES, "&Settings");
-    menuFile->Append(ID_CloseFrame, "&Close window");
+    menuFile->Append(wxID_HELP, "&Help");
+    //menuFile->Append(ID_CloseFrame, "&Close window");
     menuFile->Append(wxID_EXIT, "&Quit");
 
     wxMenu *menuWindow = new wxMenu;
@@ -81,6 +83,11 @@ void TempHomeFrame::OnOpenAbout(wxCommandEvent& event)
     hub->OpenUniqueFrame(FrameType::About);
 }
 
+void TempHomeFrame::OnOpenHelp(wxCommandEvent& event)
+{
+    hub->OpenUniqueFrame(FrameType::Help);
+}
+
 void TempHomeFrame::OnOpenSettings(wxCommandEvent& event)
 {
     hub->OpenUniqueFrame(FrameType::Settings);
@@ -111,6 +118,7 @@ wxBEGIN_EVENT_TABLE(TempHomeFrame, wxFrame)
     EVT_MENU(ID_OpenMVHead, TempHomeFrame::OnOpenMVHead)
     EVT_MENU(ID_OpenCVHead, TempHomeFrame::OnOpenCVHead)
     EVT_MENU(wxID_ABOUT, TempHomeFrame::OnOpenAbout)
+    EVT_MENU(wxID_HELP, TempHomeFrame::OnOpenHelp)
     EVT_MENU(wxID_PROPERTIES, TempHomeFrame::OnOpenSettings)
     EVT_MENU(ID_CloseFrame,  TempHomeFrame::OnExit)
     EVT_MENU(wxID_EXIT, TempHomeFrame::OnQuit)
