@@ -7,6 +7,7 @@
 #include "wx/hyperlink.h"
 #include "UserData.h"
 #include "Date.h"
+#include <fstream>
 
 //***************************
 // Public member functions. *
@@ -190,7 +191,9 @@ MV_View::MV_View(Meeting *_meeting, const int id, const wxPoint& pos, DailyHub* 
     topSizer->Add(infoSizer, wxSizerFlags(0).Center());
 
     notes = new wxTextCtrl(this, 0, UserData::GetNotes(meeting->GetID(), currentDate), wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE);
-    topSizer->Add(notes, wxSizerFlags(1).Border(wxALL, 15).Expand());
+    topSizer->Add(notes, wxSizerFlags(1).Border(wxLEFT | wxUP | wxRIGHT, 15).Expand());
+
+    topSizer->Add(new wxButton(this, wxID_SAVE, "Export Notes"), wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 15));
 
     SetSizerAndFit(topSizer);
 }
@@ -264,6 +267,38 @@ void MV_View::OnNextMeeting(wxCommandEvent& event)
         free(newDate);
 }
 
+void MV_View::OnExportNotes(wxCommandEvent& event)
+{
+    // Quit early if no notes have been taken yet
+    if (notes->GetValue().ToStdString().length() == 0)
+    {
+        wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                "This meeting has no notes to export.", "", wxOK, wxDefaultPosition);
+
+        if (warningDialog->ShowModal())
+            return;
+    }
+
+    // Ask the user to choose the location to export the notes to
+    wxDirDialog *directoryDialog = new wxDirDialog(this, "Choose export location.");
+    if (directoryDialog->ShowModal() != wxID_CANCEL)
+    {
+        // Format the export path
+        std::string exportPath = directoryDialog->GetPath().ToStdString();
+        if (exportPath[exportPath.length() - 1] != '/')
+            exportPath += "/";
+
+        // Format the file name
+        std::string fileName = meeting->GetName() + "_notes_" + std::to_string(currentDate[0]) + "-" + std::to_string(currentDate[1]) + "-" + std::to_string(currentDate[2]);
+
+        // Write the file
+        std::ofstream output;
+        output.open(exportPath + fileName);
+        output << notes->GetValue().ToStdString() << "\n";
+        output.close();
+    }
+}
+
 // This is called when the menu option to close the window is selected
 void MV_View::OnExit(wxCommandEvent& event)
 {
@@ -296,5 +331,6 @@ wxBEGIN_EVENT_TABLE(MV_View, wxFrame)
     EVT_MENU(wxID_EXIT, MV_View::OnQuit)
     EVT_BUTTON(ID_MainButton, MV_View::OnPreviousMeeting)
     EVT_BUTTON(ID_SecondaryButton, MV_View::OnNextMeeting)
+    EVT_BUTTON(wxID_SAVE, MV_View::OnExportNotes)
     EVT_CLOSE(MV_View::OnClosed)
 wxEND_EVENT_TABLE()

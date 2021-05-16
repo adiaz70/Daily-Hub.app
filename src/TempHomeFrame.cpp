@@ -57,7 +57,7 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub)
     wxStaticText *conLabel = new wxStaticText(this, 0, "Contact View:");
     conLabel->SetFont(font);
     topSizer->Add(conLabel, wxSizerFlags(0).Center().Border());
-    topSizer->Add(new wxStaticText(this, 0, "Manage the list of contacts that can be assigned to meetings."), wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxStaticText(this, 0, "Manage your list of contacts that can be assigned to meetings."), wxSizerFlags(0).Center().Border());
     topSizer->Add(new wxButton(this, ID_OpenCVHead, "Open"), wxSizerFlags(0).Center().Border());
 
     SetSizer(topSizer);
