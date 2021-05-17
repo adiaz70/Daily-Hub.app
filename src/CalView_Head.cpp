@@ -36,7 +36,7 @@ CalView_Head::CalView_Head(const int id, const wxPoint& pos, const wxSize& size,
 //Establishing FrameType
 FrameType CalView_Head::GetFrameType()
 {
-    return FrameType::CalView_Head;
+    return FrameType::CalViewHead;
 }
 //Opening & Closing Cal View
 void CalView_Head::OnOpenHome(wxCommandEvent& event)
@@ -46,7 +46,7 @@ void CalView_Head::OnOpenHome(wxCommandEvent& event)
 
 void CalView_Head::OnOpenCalView_Head(wxCommandEvent& event)
 {
-    hub->OpenFrame(FrameType::CalView_Head);
+    hub->OpenFrame(FrameType::CalViewHead);
 }
 
 void CalView_Head::OnExit(wxCommandEvent& event)

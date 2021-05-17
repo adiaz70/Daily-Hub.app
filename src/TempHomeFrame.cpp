@@ -43,10 +43,11 @@ void TempHomeFrame::OnOpenCVHead(wxCommandEvent& event)
 {
     hub->OpenFrame(FrameType::CVHead);
 }
+
 void TempHomeFrame::OnOpenCalViewHead(wxCommandEvent& event)
 {
-	hub->OpenFrame(FrameType::CalView_Head);
-	}
+	hub->OpenFrame(FrameType::CalViewHead);
+}
 	
 void TempHomeFrame::OnOpenAbout(wxCommandEvent& event)
 {
