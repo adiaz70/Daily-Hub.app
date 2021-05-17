@@ -22,6 +22,7 @@ public:
 private:
     void OnOpenMVHead(wxCommandEvent& event);
     void OnOpenCVHead(wxCommandEvent& event);
+    void OnOpenCalViewHead(wxCommandEvent& event);
     void OnOpenAbout(wxCommandEvent& event);
     void OnOpenSettings(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);

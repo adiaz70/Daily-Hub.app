@@ -22,7 +22,7 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, const wxSize& siz
     wxMenu *menuWindow = new wxMenu;
     menuWindow->Append(ID_OpenMVHead, "&Open Meeting View");
     menuWindow->Append(ID_OpenCVHead, "&Open new contacts window");
-
+    menuWindow->Append(ID_OpenCalViewHead, "& Open Calendar");
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
     menuBar->Append(menuWindow, "&Windows");
@@ -43,7 +43,11 @@ void TempHomeFrame::OnOpenCVHead(wxCommandEvent& event)
 {
     hub->OpenFrame(FrameType::CVHead);
 }
-
+void TempHomeFrame::OnOpenCalViewHead(wxCommandEvent& event)
+{
+	hub->OpenFrame(FrameType::CalView_Head);
+	}
+	
 void TempHomeFrame::OnOpenAbout(wxCommandEvent& event)
 {
     hub->OpenUniqueFrame(FrameType::About);
@@ -78,6 +82,7 @@ void TempHomeFrame::OnQuit(wxCommandEvent& event)
 wxBEGIN_EVENT_TABLE(TempHomeFrame, wxFrame)
     EVT_MENU(ID_OpenMVHead, TempHomeFrame::OnOpenMVHead)
     EVT_MENU(ID_OpenCVHead, TempHomeFrame::OnOpenCVHead)
+    EVT_MENU(ID_OpenCalViewHead, TempHomeFrame::OnOpenCalViewHead)
     EVT_MENU(wxID_ABOUT, TempHomeFrame::OnOpenAbout)
     EVT_MENU(wxID_PROPERTIES, TempHomeFrame::OnOpenSettings)
     EVT_MENU(ID_CloseFrame,  TempHomeFrame::OnExit)
