@@ -41,7 +41,7 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub)
     font.MakeBold();
     calLabel->SetFont(font);
     topSizer->Add(calLabel, wxSizerFlags(0).Center().Border());
-    topSizer->Add(new wxStaticText(this, 0, "View your scheduled meetings in a weekly calendar format."), wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxStaticText(this, 0, "Navigate your scheduled meetings in a calendar format."), wxSizerFlags(0).Center().Border());
     topSizer->Add(new wxButton(this, 0, "Open"), wxSizerFlags(0).Center().Border());
 
     topSizer->Add(10, 20);

@@ -10,9 +10,11 @@
 class HubFrame: public wxFrame
 {
 public:
+
+    // MS: 5/17/21 - now passes wxID_ANY rather than _id into wxFrame constructor because it was sometimes causing a warning and wasn't needed
     // MS: 3/21/21 - added boolean parameter to turn off frame resizing, defaults to true
     HubFrame(const wxString& title, const int _id, const wxPoint& pos, const wxSize& size, bool resize = true)
-            : wxFrame(NULL, id, title, pos, size, resize ? wxDEFAULT_FRAME_STYLE : wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
+            : wxFrame(NULL, wxID_ANY, title, pos, size, resize ? wxDEFAULT_FRAME_STYLE : wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
             { id = _id; }
 
 
