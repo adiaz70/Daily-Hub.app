@@ -45,17 +45,24 @@ CV_Head::CV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub*
     //infoSizer->Add(txt2,1,wxALL|wxEXPAND,5);
     panelInfo->SetSizer(infoSizer);
 
-
-
     contacts = UserData::GetContacts();
     contactsList = new wxListCtrl(panelContact, 0, wxDefaultPosition, wxSize(400, 200), wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VRULES);
     
-    //contactsList->
+    contactsList->AppendColumn("");
+    contactsList->SetColumnWidth(0, wxALL|wxEXPAND);
+
+    for(int i = 0; i < contacts.size(); i++){
+        contactsList->InsertItem(0, contacts[i]);
+    }
 
     conSizer->Add(contactsList, 1, wxALL|wxEXPAND, 5);
 
     contactInfo = new wxListCtrl(panelInfo, 0, wxDefaultPosition, wxSize(400, 200), wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VRULES);
     infoSizer->Add(contactInfo, 1, wxALL|wxEXPAND, 5);
+
+    wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+    buttonSizer->Add(new wxButton(contactInfo, wxID_DELETE, "Delete"), wxSizerFlags(0).Border(wxALL, 10));
+    buttonSizer->Add(new wxButton(contactInfo, wxID_EDIT, "Edit"), wxSizerFlags(0).Border(wxALL, 10));
 
 
 

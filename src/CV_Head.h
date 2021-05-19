@@ -7,6 +7,7 @@
 
 #include <wx/wx.h>
 #include <wx/listctrl.h>
+#include <wx/listbox.h>
 #include "DailyHub.h"
 #include "HubFrame.h"
 #include "enum_FrameType"
