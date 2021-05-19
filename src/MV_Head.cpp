@@ -1,7 +1,7 @@
 // MV_Head.cpp -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 5/5/21
+// Last edited on 5/15/21
 
 #include "MV_Head.h"
 #include "UserData.h"
@@ -24,13 +24,6 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, DailyHub *_hub)
     wxMenu *meetingMenu = new wxMenu;
     meetingMenu->Append(ID_OpenMVCreate, "&Create new meeting");
     meetingMenu->Append(ID_OpenMVView, "&Open selected meeting");
-
-    //******************************
-    // Testing code - remove later *
-    //******************************
-    meetingMenu->Append(wxID_YES, "&Reset database");
-    meetingMenu->Append(wxID_OK, "&Print database");
-    meetingMenu->Append(wxID_YESTOALL, "&Print contacts");
 
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(fileMenu, "&File");
@@ -64,7 +57,10 @@ MV_Head::MV_Head(const int id, const wxPoint& pos, DailyHub *_hub)
     buttonSizer->Add(new wxButton(this, wxID_DELETE, "Delete"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     buttonSizer->Add(new wxButton(this, wxID_EDIT, "Edit"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
     buttonSizer->Add(new wxButton(this, ID_OpenMVView, "Open"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
-    topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 10));
+    buttonSizer->Add(new wxButton(this, ID_OpenMVCreate, "New"), wxSizerFlags(0).Border(wxLEFT | wxDOWN | wxRIGHT, 10));
+    topSizer->Add(buttonSizer, wxSizerFlags(0).Center().Border(wxUP, 5));
+
+    topSizer->Add(5, 10);
 
     SetSizerAndFit(topSizer);
 }
@@ -142,27 +138,6 @@ void MV_Head::OnClosed(wxCloseEvent& event)
 void MV_Head::OnQuit(wxCommandEvent& event)
 {
     hub->CloseAll();
-}
-
-void MV_Head::OnResetDatabase(wxCommandEvent& event)
-{
-    UserData::ResetDatabase(true);
-}
-
-void MV_Head::OnPrintDatabase(wxCommandEvent& event)
-{
-    // Calling UserData::GetMeetings(true) will print every meeting in the database, but it also creates a bunch of objects in memory
-    std::vector<Meeting *> meetings = UserData::GetMeetings(true);
-    // So, go through and delete them all
-    for (int i = 0; i < meetings.size(); i++)
-    {
-        delete(meetings[i]);
-    }
-}
-
-void MV_Head::OnPrintContacts(wxCommandEvent& event)
-{
-    UserData::GetContacts(true);
 }
 
 void MV_Head::OnActivate(wxActivateEvent& event)
@@ -252,11 +227,9 @@ wxBEGIN_EVENT_TABLE(MV_Head, wxFrame)
     EVT_MENU(ID_OpenMVCreate, MV_Head::OnCreate)
     EVT_MENU(ID_CloseFrame, MV_Head::OnExit)
     EVT_MENU(wxID_EXIT, MV_Head::OnQuit)
-    EVT_MENU(wxID_YES, MV_Head::OnResetDatabase)
-    EVT_MENU(wxID_OK, MV_Head::OnPrintDatabase)
-    EVT_MENU(wxID_YESTOALL, MV_Head::OnPrintContacts)
     EVT_LIST_ITEM_ACTIVATED(wxID_ANY, MV_Head::OnDoubleClick)
     EVT_BUTTON(ID_OpenMVView, MV_Head::OnOpenMeeting)
+    EVT_BUTTON(ID_OpenMVCreate, MV_Head::OnCreate)
     EVT_BUTTON(wxID_EDIT, MV_Head::OnEdit)
     EVT_BUTTON(wxID_DELETE, MV_Head::OnDelete)
     EVT_ACTIVATE(MV_Head::OnActivate)

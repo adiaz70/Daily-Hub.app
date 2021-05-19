@@ -25,7 +25,7 @@ public:
     static std::vector<Meeting *> GetMeetings(int date[3], bool print = false);
     static std::vector<Meeting *> GetMeetings(int startDate[3], int endDate[3], bool print = false);
     static std::vector<std::string> GetContacts(bool print = false);
-    static std::string GetNotes(int meetingID);
+    static std::string GetNotes(int meetingID, int *meetingDate);
     static time_t GetLastAccessTime();
 
     // Setters
@@ -34,11 +34,12 @@ public:
     static void UpdateMeeting(Meeting *meeting);
     static void DeleteMeeting(Meeting *meeting);
     static void AddContact(std::string contact);
-    static void SaveNotes(int meetingID, std::string notes);
+    static void SaveNotes(int meetingID, int *meetingDate, std::string notes);
 
     // Database stuff
     static void RefreshDatabase();
     static void ResetDatabase(bool populate = false);
+    static bool CheckDatabase();
 
 private:
     UserData(){}
@@ -47,8 +48,9 @@ private:
     static int ContactCallback(void *data, int argc, char **argv, char **colName);
     static int IDCallback(void *data, int argc, char **argv, char **colName);
     static int NotesCallback(void *data, int argc, char **argv, char **colName);
+    static int TrueFalseCallback(void *data, int argc, char **argv, char **colName);
     static void CreateDatabase(bool populate = false);
-    static void OpenDatabase(sqlite3 **database);
+    static bool OpenDatabase(sqlite3 **database);
     static void SanitizeString(std::string *text, std::string escapeSequence = "\'");
     static std::string FormatDateString(int *date);
     static void PrintMeetingInfo(Meeting *meeting);

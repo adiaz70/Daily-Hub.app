@@ -1,7 +1,7 @@
 // MV_Head.h -- the 'head' (or primary frame) for the Meeting View
 // Maintained by: Marcus Schmidt
 // Created on 3/14/21
-// Last edited on 5/1/21
+// Last edited on 5/14/21
 
 #ifndef MV_HEAD_H
 #define MV_HEAD_H
@@ -39,11 +39,6 @@ private:
     ~MV_Head();
     void FillColumn(Meeting *meeting, int startIndex = 0);
     void OpenMeeting();
-
-    // Development functions
-    void OnResetDatabase(wxCommandEvent& event);
-    void OnPrintDatabase(wxCommandEvent& event);
-    void OnPrintContacts(wxCommandEvent& event);
 
     DailyHub *hub;
     wxListCtrl *meetingsList;

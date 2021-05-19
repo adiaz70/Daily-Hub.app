@@ -1,6 +1,7 @@
 // SettingsWindow.h
 // MS: 5/5/21 - initial code
 // MS: 5/11/21 - made topSizer a private member variable for later access
+// MS: 5/14/21 - added functions to reset database (with and without test values)
 
 #ifndef SETTINGS_WINDOW
 #define SETTINGS_WINDOW
@@ -20,6 +21,8 @@ public:
 private:
     void OnChangeFilepath(wxCommandEvent& event);
     void OnResetFilepath(wxCommandEvent& event);
+    void OnResetDatabase(wxCommandEvent& event);
+    void OnCreateTestDatabase(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);
     DailyHub* hub;
     wxBoxSizer *topSizer;

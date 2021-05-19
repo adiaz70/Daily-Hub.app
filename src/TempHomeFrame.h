@@ -16,13 +16,14 @@
 class TempHomeFrame: public HubFrame
 {
 public:
-    TempHomeFrame(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub);
+    TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub);
     FrameType GetFrameType();
 
 private:
     void OnOpenMVHead(wxCommandEvent& event);
     void OnOpenCVHead(wxCommandEvent& event);
     void OnOpenAbout(wxCommandEvent& event);
+    void OnOpenHelp(wxCommandEvent& event);
     void OnOpenSettings(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnClosed(wxCloseEvent& event);

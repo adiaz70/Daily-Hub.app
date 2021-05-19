@@ -2,6 +2,7 @@
 // MS: 5/5/21 - initial code
 // MS: 5/6/21 - some bug fixes/improvements
 // MS: 5/12/21 - attempted to improve runtime safety
+// MS: 5/18/21 - confirmed that the database is ready for data entry whenever the filepath is changed
 
 #include "Settings.h"
 #include "UserData.h"
@@ -37,21 +38,27 @@ void Settings::SetDatabasePath(std::string path)
     sqlite3_exec(database, sql.c_str(), NULL, NULL, NULL);
     sqlite3_close(database);
 
-    // Finally, alert the database that it needs to refresh because it might have totally different contents, now
-    UserData::RefreshDatabase();
+    // Finally, confirm that the database in this new location is ready to accept data entry (which also updates it access time)
+    UserData::CheckDatabase();
 }
 
 void Settings::ResetDatabasePath() { SetDatabasePath(settingsPath); }
 
+// MS: 5/14/21 - added check for a fully functional database when the program starts (and added comments)
 void Settings::Init()
 {
+    // Set the filepath to the settings database (which should never change unless the user's name can't be retrieved)
     std::string userName = Settings::GetUserName();
     if (userName.length() != 0)
         settingsPath = "/home/" + userName + "/.dailyhub/";
     else
         settingsPath = ".dailyhub/";
 
+    // Check the settings database for the filepath to the user data database (which matches by default)
     databasePath = Settings::FetchDatabasePath();
+
+    // Make sure that the database is fully created and ready to accept entries
+    UserData::CheckDatabase();
 }
 
 //***************************

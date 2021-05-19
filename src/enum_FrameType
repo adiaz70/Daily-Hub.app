@@ -4,6 +4,7 @@
 // MS: 4/12/21 - added MVView
 // MS: 5/4/21 - added About
 // MS: 5/5/21 - added Settings
+// MS: 5/15/21 - added Help
 
 #ifndef ENUM_FRAME_TYPE
 #define ENUM_FRAME_TYPE
@@ -20,7 +21,8 @@ enum FrameType
     MVView = 6,
     CreateContact = 7,
     About = 8,
-    Settings = 9
+    Settings = 9,
+    Help = 10
 };
 
 #endif

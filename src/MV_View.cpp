@@ -1,24 +1,26 @@
 // MV_View.cpp -- the frame where an individual Meeting can be viewed and notes can be taken
 // Maintained by: Marcus Schmidt
 // Created on 4/12/21
-// Last edited on 5/11/21
+// Last edited on 5/15/21
 
 #include "MV_View.h"
 #include "wx/hyperlink.h"
 #include "UserData.h"
 #include "Date.h"
+#include <fstream>
 
 //***************************
 // Public member functions. *
 //***************************
 
-MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _hub)
-        : HubFrame(wxString(meeting->GetName() + ((meeting->GetContact().length() != 0) ? " - " + meeting->GetContact() : "")),
+MV_View::MV_View(Meeting *_meeting, const int id, const wxPoint& pos, DailyHub* _hub)
+        : HubFrame(wxString(_meeting->GetName() + ((_meeting->GetContact().length() != 0) ? " - " + _meeting->GetContact() : "")),
         id, pos, wxDefaultSize)
 {
     hub = _hub;
-    meetingID = meeting->GetID();
-    if (meetingID == -1)
+    meeting = _meeting;
+
+    if (meeting->GetID() == -1)
     {
         Close(true);
         return;
@@ -46,20 +48,33 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
         }
 
         bool *recurringDays = meeting->GetRecurringDays();
+        // For each day of the week
         for (int i = 0; i < 7; i++)
         {
-            // Look through all of the remaining days of the week (looping around to the start of the week as needed)
-            // (Note: we don't want to only check days that are scheduled because we want to be able to get back on track)
-            for (int j = 1; j < 6; j++)
+            // Look forward for the next time the meeting is set to occur
+            for (int j = 1; j < 7; j++)
             {
-                // And check if it is another day that the meeting is set to occur on
                 if (recurringDays[(i + j) % 7])
                 {
                     // If one is found, set the forward shift for this day to equal the difference between them
                     shiftForwardTable[i] = j;
-                    // Then set the backward shift for the other day to equal the difference between them, too
-                    shiftBackwardTable[(i + j) % 7] = j;
-                    // And finally break this inner loop to go on and check the next day
+                    // And break this inner loop
+                    break;
+                }
+            }
+
+            // Then look backward for the previous time that a meeting is set to occur
+            for (int j = 1; j < 7; j++)
+            {
+                int index = i - j;
+                if (index < 0)
+                    index += 7;
+
+                if (recurringDays[index])
+                {
+                    // If one is found, set the backward shift for the other day to equal the difference between them, too
+                    shiftBackwardTable[i] = j;
+                    // And break this inner loop
                     break;
                 }
             }
@@ -130,10 +145,13 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
 
     // Add all of the relevant info for date of this current meeting (if one-time, it's just the scheduled date)
     // (if a recurring meeting, it could be any instance of the meeting).
+    int labelBorder = 0;
     wxBoxSizer *selectedDateSizer = new wxBoxSizer(wxHORIZONTAL);
     // If the meeting is recurring, it needs buttons on either side of the label to change the current one to the next or previous instance
     if (meeting->IsRecurring())
     {
+        labelBorder = 15;
+
         wxButton *previousButton = new wxButton(this, ID_MainButton, "Previous", wxDefaultPosition, wxSize(60, 25), wxBU_EXACTFIT);
         wxFont font = previousButton->GetFont();
         font.MakeSmaller();
@@ -148,8 +166,8 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
     currentDate[1] = firstDate[1];
     currentDate[2] = firstDate[2];
     // Make sure that a meeting actually takes place on this day and that it's not just the start of the range
-    // (if so, shift forward to the first actuall occurence)
-    if (!meeting->GetRecurringDays()[Date::DayOfWeek(currentDate)])
+    // (if so, shift forward to the first actual occurence)
+    if (meeting->IsRecurring() && !meeting->GetRecurringDays()[Date::DayOfWeek(currentDate)])
     {
         int *newDate = Date::ShiftDate(currentDate, shiftForwardTable[Date::DayOfWeek(currentDate)]);
         free(currentDate);
@@ -157,7 +175,7 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
     }
     formattedDate = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
     meetingDate = new wxStaticText(this, 0, wxString(formattedDate));
-    selectedDateSizer->Add(meetingDate, wxSizerFlags(0).Border(wxLEFT, 15));
+    selectedDateSizer->Add(meetingDate, wxSizerFlags(0).Border(wxLEFT, labelBorder));
     // Then add the second button on the other side of the label
     if (meeting->IsRecurring())
     {
@@ -172,8 +190,10 @@ MV_View::MV_View(Meeting *meeting, const int id, const wxPoint& pos, DailyHub* _
 
     topSizer->Add(infoSizer, wxSizerFlags(0).Center());
 
-    notes = new wxTextCtrl(this, 0, UserData::GetNotes(meetingID), wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE);
-    topSizer->Add(notes, wxSizerFlags(1).Border(wxALL, 15).Expand());
+    notes = new wxTextCtrl(this, 0, UserData::GetNotes(meeting->GetID(), currentDate), wxDefaultPosition, wxSize(300, 150), wxTE_MULTILINE);
+    topSizer->Add(notes, wxSizerFlags(1).Border(wxLEFT | wxUP | wxRIGHT, 15).Expand());
+
+    topSizer->Add(new wxButton(this, wxID_SAVE, "Export Notes"), wxSizerFlags(0).Center().Border(wxUP | wxDOWN, 15));
 
     SetSizerAndFit(topSizer);
 }
@@ -200,29 +220,83 @@ void MV_View::OnOpenMVHead(wxCommandEvent& event)
 void MV_View::OnPreviousMeeting(wxCommandEvent& event)
 {
     int *newDate = Date::ShiftDate(currentDate, -shiftBackwardTable[Date::DayOfWeek(currentDate)]);
-    free(currentDate);
-    currentDate = newDate;
 
-    //***************************************************************************
-    // To-do: check that this new date does not exceed the meeting's date range *
-    //***************************************************************************
+    // Make sure that the date of the previous meeting is after the start of the valid meeting date range
+    int *earliestDate = meeting->GetFirstDate();
+    if (newDate[2] > earliestDate[2] || (newDate[2] == earliestDate[2] && newDate[0] > earliestDate[0]) ||
+        (newDate[2] == earliestDate[2] && newDate[0] == earliestDate[0] && newDate[1] >= earliestDate[1]))
+    {
+        // Save the notes taken in the database
+        UserData::SaveNotes(meeting->GetID(), currentDate, notes->GetValue().ToStdString());
 
-    std::string dateString = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
-    meetingDate->SetLabel(wxString(dateString));
+        free(currentDate);
+        currentDate = newDate;
+
+        std::string dateString = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
+        meetingDate->SetLabel(wxString(dateString));
+
+        // Get the notes for the next instance of the meeting from the database
+        notes->SetValue(UserData::GetNotes(meeting->GetID(), currentDate));
+    }
+    else
+        free(newDate);
 }
 
 void MV_View::OnNextMeeting(wxCommandEvent& event)
 {
     int *newDate = Date::ShiftDate(currentDate, shiftForwardTable[Date::DayOfWeek(currentDate)]);
-    free(currentDate);
-    currentDate = newDate;
 
-    //***************************************************************************
-    // To-do: check that this new date does not exceed the meeting's date range *
-    //***************************************************************************
+    // Make sure that the date of the next meeting is before the end of the valid meeting date range
+    int *latestDate = meeting->GetSecondDate();
+    if (newDate[2] < latestDate[2] || (newDate[2] == latestDate[2] && newDate[0] < latestDate[0]) ||
+        (newDate[2] == latestDate[2] && newDate[0] == latestDate[0] && newDate[1] <= latestDate[1]))
+    {
+        // Save the notes taken in the database
+        UserData::SaveNotes(meeting->GetID(), currentDate, notes->GetValue().ToStdString());
 
-    std::string dateString = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
-    meetingDate->SetLabel(wxString(dateString));
+        free(currentDate);
+        currentDate = newDate;
+
+        std::string dateString = std::to_string(currentDate[0]) + "/" + std::to_string(currentDate[1]) + "/" + std::to_string(currentDate[2]);
+        meetingDate->SetLabel(wxString(dateString));
+
+        // Get the notes for the next instance of the meeting from the database
+        notes->SetValue(UserData::GetNotes(meeting->GetID(), currentDate));
+    }
+    else
+        free(newDate);
+}
+
+void MV_View::OnExportNotes(wxCommandEvent& event)
+{
+    // Quit early if no notes have been taken yet
+    if (notes->GetValue().ToStdString().length() == 0)
+    {
+        wxMessageDialog *warningDialog = new wxMessageDialog(this,
+                "This meeting has no notes to export.", "", wxOK, wxDefaultPosition);
+
+        if (warningDialog->ShowModal())
+            return;
+    }
+
+    // Ask the user to choose the location to export the notes to
+    wxDirDialog *directoryDialog = new wxDirDialog(this, "Choose export location.");
+    if (directoryDialog->ShowModal() != wxID_CANCEL)
+    {
+        // Format the export path
+        std::string exportPath = directoryDialog->GetPath().ToStdString();
+        if (exportPath[exportPath.length() - 1] != '/')
+            exportPath += "/";
+
+        // Format the file name
+        std::string fileName = meeting->GetName() + "_notes_" + std::to_string(currentDate[0]) + "-" + std::to_string(currentDate[1]) + "-" + std::to_string(currentDate[2]);
+
+        // Write the file
+        std::ofstream output;
+        output.open(exportPath + fileName);
+        output << notes->GetValue().ToStdString() << "\n";
+        output.close();
+    }
 }
 
 // This is called when the menu option to close the window is selected
@@ -236,7 +310,7 @@ void MV_View::OnExit(wxCommandEvent& event)
 void MV_View::OnClosed(wxCloseEvent& event)
 {
     // Save the notes taken in the database
-    UserData::SaveNotes(meetingID, notes->GetValue().ToStdString());
+    UserData::SaveNotes(meeting->GetID(), currentDate, notes->GetValue().ToStdString());
 
     // Make sure the app has forgotten this frame before destroying it
     if (!forgotten)
@@ -257,5 +331,6 @@ wxBEGIN_EVENT_TABLE(MV_View, wxFrame)
     EVT_MENU(wxID_EXIT, MV_View::OnQuit)
     EVT_BUTTON(ID_MainButton, MV_View::OnPreviousMeeting)
     EVT_BUTTON(ID_SecondaryButton, MV_View::OnNextMeeting)
+    EVT_BUTTON(wxID_SAVE, MV_View::OnExportNotes)
     EVT_CLOSE(MV_View::OnClosed)
 wxEND_EVENT_TABLE()
