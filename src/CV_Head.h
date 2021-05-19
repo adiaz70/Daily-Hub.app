@@ -6,6 +6,7 @@
 #define CV_HEAD_H
 
 #include <wx/wx.h>
+#include <wx/listctrl.h>
 #include "DailyHub.h"
 #include "HubFrame.h"
 #include "enum_FrameType"
@@ -25,6 +26,10 @@ private:
     void OnClosed(wxCloseEvent& event);
     void OnQuit(wxCommandEvent& event);
     DailyHub* hub;
+
+    wxListCtrl *contactsList;
+    wxListCtrl *contactInfo;
+    std::vector<std::string> contacts;
 
     wxDECLARE_EVENT_TABLE();
 };

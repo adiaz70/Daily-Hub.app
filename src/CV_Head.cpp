@@ -5,6 +5,7 @@
 // g++ *.cpp *.h `wx-config --cxxflags --libs` -o test
 
 #include "CV_Head.h"
+#include "UserData.h"
 #include <wx/splitter.h>
 #include <wx/sizer.h>
 
@@ -31,19 +32,33 @@ CV_Head::CV_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub*
     wxPanel *panelContact = new wxPanel(splittermain,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER);   /*Create a sizer for contacts*/
     wxStaticBoxSizer *conSizer = new wxStaticBoxSizer(wxHORIZONTAL,panelContact,_T("Contacts"));
 
-    conSizer->SetMinSize(550,10);
-    wxTextCtrl *txt1 = new wxTextCtrl( panelContact, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
-    conSizer->Add(txt1,1,wxALL|wxEXPAND,5);
+    conSizer->SetMinSize(350,400);
+    //wxTextCtrl *txt1 = new wxTextCtrl( panelContact, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+    //conSizer->Add(txt1,1,wxALL|wxEXPAND,5);
     panelContact->SetSizer(conSizer);
        
     wxPanel *panelInfo = new wxPanel(splittermain,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER);   /*create a sizer for contact infor*/
     wxStaticBoxSizer *infoSizer = new wxStaticBoxSizer(wxHORIZONTAL,panelInfo,_T("Contact Info"));
 
-    infoSizer->SetMinSize(550,10);
-    wxTextCtrl *txt2 = new wxTextCtrl( panelInfo, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
-    infoSizer->Add(txt2,1,wxALL|wxEXPAND,5);
+    infoSizer->SetMinSize(550,300);
+    //wxTextCtrl *txt2 = new wxTextCtrl( panelInfo, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+    //infoSizer->Add(txt2,1,wxALL|wxEXPAND,5);
     panelInfo->SetSizer(infoSizer);
-       
+
+
+
+    contacts = UserData::GetContacts();
+    contactsList = new wxListCtrl(panelContact, 0, wxDefaultPosition, wxSize(400, 200), wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VRULES);
+    
+    //contactsList->
+
+    conSizer->Add(contactsList, 1, wxALL|wxEXPAND, 5);
+
+    contactInfo = new wxListCtrl(panelInfo, 0, wxDefaultPosition, wxSize(400, 200), wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VRULES);
+    infoSizer->Add(contactInfo, 1, wxALL|wxEXPAND, 5);
+
+
+
     splittermain->SetSashGravity(0.25);     /*This changes how much 'space' the contacts sizer will take*/
     splittermain->SplitVertically(panelContact, panelInfo);        /*put both sizers in the main sizer*/
        

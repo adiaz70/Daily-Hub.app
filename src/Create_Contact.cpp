@@ -3,6 +3,7 @@
 // Created 4/14/21
 
 #include "Create_Contact.h"
+#include "UserData.h"
 
 Create_Contact::Create_Contact(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _hub) : HubFrame("Create New Contact", id, pos, size, false)
 {
@@ -41,7 +42,9 @@ FrameType Create_Contact::GetFrameType()
 
 void Create_Contact::OnCreate(wxCommandEvent& event)
 {
-    //Code to add info to database
+
+    UserData::AddContact(name->GetValue().ToStdString());
+
 
     Close(true);
 }
