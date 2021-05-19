@@ -4,9 +4,13 @@
 // g++ *.cpp *.h `wx-config --cxxflags --libs` -o test
 
 #include "CalView_Head.h"
+#include<wx/wx.h>
+#include<wx/sizer.h>
+#include<wx/calctrl.h>
+#include"enum_FrameType"
 // Calendar  View:: DHub
 CalView_Head::CalView_Head(const int id, const wxPoint& pos, const wxSize& size, DailyHub* _Dhub)
-
+	
          : HubFrame("Daily Hub - Calendar", id, pos, size)
 {
 
@@ -22,11 +26,18 @@ CalView_Head::CalView_Head(const int id, const wxPoint& pos, const wxSize& size,
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
     SetMenuBar(menuBar);
+    
+    wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+    mainSizer->Add(new wxCalendarCtrl(this, wxID_ANY), wxSizerFlags().Expand().Border(wxALL, 10));
+    SetSizerAndFit(mainSizer);
+    
+    
+    //wxStaticBoxSizer		
 }
 //Establishing FrameType
 FrameType CalView_Head::GetFrameType()
 {
-    return FrameType::CalView_Head;
+    return FrameType::CalViewHead;
 }
 //Opening & Closing Cal View
 void CalView_Head::OnOpenHome(wxCommandEvent& event)
@@ -36,7 +47,7 @@ void CalView_Head::OnOpenHome(wxCommandEvent& event)
 
 void CalView_Head::OnOpenCalView_Head(wxCommandEvent& event)
 {
-    hub->OpenFrame(FrameType::CalView_Head);
+    hub->OpenFrame(FrameType::CalViewHead);
 }
 
 void CalView_Head::OnExit(wxCommandEvent& event)
@@ -62,4 +73,5 @@ wxBEGIN_EVENT_TABLE(CalView_Head, wxFrame)
     EVT_MENU(ID_CloseFrame, CalView_Head::OnExit)
     EVT_MENU(wxID_EXIT, CalView_Head::OnQuit)
     EVT_CLOSE(CalView_Head::OnClosed)
-wxEND_EVENT_TABLE() 
+wxEND_EVENT_TABLE()  
+
