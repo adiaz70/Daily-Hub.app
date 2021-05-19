@@ -28,8 +28,9 @@ CalView_Head::CalView_Head(const int id, const wxPoint& pos, const wxSize& size,
     SetMenuBar(menuBar);
     
     wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(new wxCalendarCtrl(this, wxID_ANY));
+    mainSizer->Add(new wxCalendarCtrl(this, wxID_ANY), wxSizerFlags().Expand().Border(wxALL, 10));
     SetSizerAndFit(mainSizer);
+    
     
     //wxStaticBoxSizer		
 }

@@ -69,7 +69,8 @@ void DailyHub::OpenFrame(FrameType id, void *data)
             break;
         case FrameType::CVHead: frames.push_back(new CV_Head(NewFrameID(), wxPoint(50, 50), wxSize(450, 340), this)); break;
         case FrameType::CreateContact: frames.push_back(new Create_Contact(NewFrameID(), wxPoint(50,50), wxSize(450, 240), this)); break;
-        case FrameType::CalViewHead: frames.push_back(new CalView_Head(NewFrameID(),wxPoint(50,50), wxSize(450,340), this)); break;
+        case FrameType::CalViewHead: frames.push_back(new CalView_Head(NewFrameID(),wxPoint(50,50), wxSize(450,340), this));
+        break;
         case FrameType::MVView: frames.push_back(new MV_View((Meeting *) data, NewFrameID(), wxPoint(50, 50), this)); break;
         case FrameType::About: frames.push_back(new AboutWindow(NewFrameID(), wxPoint(50, 50), this)); break;
         case FrameType::Settings: frames.push_back(new SettingsWindow(NewFrameID(), wxPoint(50, 50), this)); break;
