@@ -24,8 +24,8 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub)
 
     wxMenu *menuWindow = new wxMenu;
     menuWindow->Append(ID_OpenMVHead, "&Open Meeting View");
-    menuWindow->Append(ID_OpenCVHead, "&Open new contacts window");
-    menuWindow->Append(ID_OpenCalViewHead, "& Open Calendar");
+    menuWindow->Append(ID_OpenCVHead, "&Open Contact View");
+    menuWindow->Append(ID_OpenCalViewHead, "&Open Calendar View");
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
     menuBar->Append(menuWindow, "&Windows");
@@ -36,17 +36,9 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub)
 
     topSizer->Add(10, 15);
 
-    wxStaticText *calLabel = new wxStaticText(this, 0, "Calendar View:");
-    font = calLabel->GetFont();
-    font.MakeBold();
-    calLabel->SetFont(font);
-    topSizer->Add(calLabel, wxSizerFlags(0).Center().Border());
-    topSizer->Add(new wxStaticText(this, 0, "Navigate your scheduled meetings in a calendar format."), wxSizerFlags(0).Center().Border());
-    topSizer->Add(new wxButton(this, 0, "Open"), wxSizerFlags(0).Center().Border());
-
-    topSizer->Add(10, 20);
-
     wxStaticText *mLabel = new wxStaticText(this, 0, "Meeting View:");
+    font = mLabel->GetFont();
+    font.MakeBold();
     mLabel->SetFont(font);
     topSizer->Add(mLabel, wxSizerFlags(0).Center().Border());
     topSizer->Add(new wxStaticText(this, 0, "View, manage, and create new meetings in a list format."), wxSizerFlags(0).Center().Border());
@@ -59,6 +51,14 @@ TempHomeFrame::TempHomeFrame(const int id, const wxPoint& pos, DailyHub* _hub)
     topSizer->Add(conLabel, wxSizerFlags(0).Center().Border());
     topSizer->Add(new wxStaticText(this, 0, "Manage your list of contacts that can be assigned to meetings."), wxSizerFlags(0).Center().Border());
     topSizer->Add(new wxButton(this, ID_OpenCVHead, "Open"), wxSizerFlags(0).Center().Border());
+
+    topSizer->Add(10, 20);
+
+    wxStaticText *calLabel = new wxStaticText(this, 0, "Calendar View:");
+    calLabel->SetFont(font);
+    topSizer->Add(calLabel, wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxStaticText(this, 0, "Navigate your scheduled meetings in a calendar format."), wxSizerFlags(0).Center().Border());
+    topSizer->Add(new wxButton(this, ID_OpenCalViewHead, "Open"), wxSizerFlags(0).Center().Border());
 
     SetSizer(topSizer);
 }
@@ -80,7 +80,7 @@ void TempHomeFrame::OnOpenCVHead(wxCommandEvent& event)
 void TempHomeFrame::OnOpenCalViewHead(wxCommandEvent& event)
 {
 	hub->OpenFrame(FrameType::CalViewHead);
-	}
+}
 	
 void TempHomeFrame::OnOpenAbout(wxCommandEvent& event)
 {
@@ -129,5 +129,6 @@ wxBEGIN_EVENT_TABLE(TempHomeFrame, wxFrame)
     EVT_MENU(wxID_EXIT, TempHomeFrame::OnQuit)
     EVT_BUTTON(ID_OpenMVHead, TempHomeFrame::OnOpenMVHead)
     EVT_BUTTON(ID_OpenCVHead, TempHomeFrame::OnOpenCVHead)
+    EVT_BUTTON(ID_OpenCalViewHead, TempHomeFrame::OnOpenCalViewHead)
     EVT_CLOSE(TempHomeFrame::OnClosed)
 wxEND_EVENT_TABLE()

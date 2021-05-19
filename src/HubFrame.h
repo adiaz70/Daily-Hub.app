@@ -33,7 +33,7 @@ protected:
     bool forgotten = false;
 
 private:
-    int id; // this is almost certainly not necessary, but for some reason my brain can't figure out how to access the wxFrame ID
+    int id;
 };
 
 #endif
